@@ -260,3 +260,99 @@ async function updateWatchStats(){
     const f=await fetch(SUPABASE_URL+'/rest/v1/follows?select=*&follower_id=eq.'+currentUser.id+'&following_id=eq.'+currentVideo.artist_id,{headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken}});
     const isF=(await f.json()).length>0;const sb=document.getElementById('watchSubscribeBtn');sb.textContent=isF?'Вы подписаны':'Подписаться';sb.className='subscribe-btn '+(isF?'unsub':'sub');
 }
+async function loadComments(){
+    if(!currentVideo)return;
+    const r=await fetch(SUPABASE_URL+'/rest/v1/comments?select=*&video_id=eq.'+currentVideo.id+'&order=created_at.desc',{headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken}});
+    const c=await r.json();document.getElementById('commentsCount').textContent='Комментарии ('+c.length+')';
+    document.getElementById('commentsList').innerHTML=c.map(c=>`<div class="comment"><img src="https://i.pravatar.cc/40?u=${c.user_id}"><div class="comment-body"><h4>Пользователь <span>${new Date(c.created_at).toLocaleDateString()}</span></h4><p>${c.text}</p></div></div>`).join('');
+}
+
+async function addComment(){
+    if(!currentVideo)return;const text=document.getElementById('commentInput').value.trim();if(!text)return;
+    await fetch(SUPABASE_URL+'/rest/v1/comments',{method:'POST',headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken,'Content-Type':'application/json'},body:JSON.stringify({user_id:currentUser.id,video_id:currentVideo.id,text})});
+    document.getElementById('commentInput').value='';loadComments();
+}
+
+async function loadSidebarVideos(){document.getElementById('watchSidebar').innerHTML=allVideos.filter(x=>x.id!==(currentVideo?.id)).slice(0,10).map(v=>`<div class="video-card" onclick="watchVideo('${v.id}')"><div class="thumb-wrap">${v.thumbnail_url?`<img src="${v.thumbnail_url}">`:`<video src="${v.video_url}" muted preload="metadata"></video>`}</div><div class="video-details"><h3>${v.title}</h3><p>${v.artist} • ${v.views||0} просмотров</p></div></div>`).join('')}
+
+async function viewProfile(userId){
+    const v=allVideos.filter(x=>x.artist_id===userId);const u=v.length?v[0]:{artist:'Пользователь',artist_id:userId};
+    const f=await fetch(SUPABASE_URL+'/rest/v1/follows?select=*&following_id=eq.'+userId,{headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken,'Prefer':'count=exact'}});
+    const fCount=parseInt(f.headers.get('content-range')?.split('/')[1])||0;
+    document.getElementById('profileContent').innerHTML=`
+        <div class="profile-banner"></div>
+        <div class="profile-header"><img class="profile-avatar" src="https://i.pravatar.cc/120?u=${userId}"><div class="profile-info"><h1>${u.artist}</h1><p>${fCount} подписчиков • ${v.length} видео</p></div></div>
+        <div class="profile-tabs"><div class="profile-tab active">Видео</div><div class="profile-tab">О канале</div></div>
+        <div class="video-grid">${v.map(v=>`<div class="video-card" onclick="watchVideo('${v.id}')"><div class="thumb-wrap">${v.thumbnail_url?`<img src="${v.thumbnail_url}">`:`<video src="${v.video_url}" muted preload="metadata"></video>`}</div><div class="video-details"><h3>${v.title}</h3><p>${v.views||0} просмотров</p></div></div>`).join('')}</div>`;
+    showPage('profile-page');
+}
+
+function showPage(page){
+    document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+    document.getElementById('watchPage').style.display='none';
+    document.getElementById('watchPage').classList.remove('active');
+    const el=document.getElementById(page);if(el)el.classList.add('active');
+    document.querySelectorAll('.sidebar-item').forEach(s=>s.classList.remove('active'));
+}
+
+function setupEvents(){
+    document.getElementById('userMenuBtn').addEventListener('click',e=>{e.stopPropagation();document.getElementById('userDropdown').classList.toggle('show')});
+    document.addEventListener('click',()=>document.getElementById('userDropdown').classList.remove('show'));
+    document.getElementById('profileBtn').addEventListener('click',e=>{e.preventDefault();viewProfile(currentUser.id);document.getElementById('userDropdown').classList.remove('show')});
+    document.getElementById('logoutBtn').addEventListener('click',e=>{e.preventDefault();localStorage.clear();window.location.href='login.html'});
+    document.getElementById('watchLikeBtn').addEventListener('click',async()=>{if(!currentVideo)return;const l=await fetch(SUPABASE_URL+'/rest/v1/likes?select=*&user_id=eq.'+currentUser.id+'&video_id=eq.'+currentVideo.id,{headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken}});const d=await l.json();if(d.length){await fetch(SUPABASE_URL+'/rest/v1/likes?user_id=eq.'+currentUser.id+'&video_id=eq.'+currentVideo.id,{method:'DELETE',headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken}})}else{await fetch(SUPABASE_URL+'/rest/v1/likes',{method:'POST',headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken,'Content-Type':'application/json'},body:JSON.stringify({user_id:currentUser.id,video_id:currentVideo.id})})}updateWatchStats()});
+    document.getElementById('watchSubscribeBtn').addEventListener('click',async()=>{if(!currentVideo)return;const f=await fetch(SUPABASE_URL+'/rest/v1/follows?select=*&follower_id=eq.'+currentUser.id+'&following_id=eq.'+currentVideo.artist_id,{headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken}});const d=await f.json();if(d.length){await fetch(SUPABASE_URL+'/rest/v1/follows?follower_id=eq.'+currentUser.id+'&following_id=eq.'+currentVideo.artist_id,{method:'DELETE',headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken}})}else{await fetch(SUPABASE_URL+'/rest/v1/follows',{method:'POST',headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken,'Content-Type':'application/json'},body:JSON.stringify({follower_id:currentUser.id,following_id:currentVideo.artist_id})})}updateWatchStats()});
+    
+    const uploadModal=document.getElementById('uploadModal');
+    document.getElementById('uploadBtn').addEventListener('click',()=>uploadModal.style.display='flex');
+    document.getElementById('cancelUpload').addEventListener('click',()=>{uploadModal.style.display='none';resetUpload()});
+    document.getElementById('confirmUpload').addEventListener('click',async()=>{
+        const title=document.getElementById('uploadTitle').value,vf=document.getElementById('uploadVideoFile').files[0],tf=document.getElementById('uploadThumbFile').files[0],desc=document.getElementById('uploadDesc').value;
+        if(!title||!vf){alert('Введите название и выберите видео');return}
+        const btn=document.getElementById('confirmUpload');btn.disabled=true;btn.textContent='Загрузка...';
+        const progress=document.getElementById('uploadProgress');progress.style.display='block';
+        try{
+            const artist=currentUser.user_metadata?.name||currentUser.email?.split('@')[0];
+            const fd=new FormData();fd.append('file',vf);
+            const fn='videos/'+currentUser.id+'/'+Date.now()+'_'+vf.name.replace(/[^a-zA-Z0-9.]/g,'_');
+            await fetch(SUPABASE_URL+'/storage/v1/object/music/'+fn,{method:'POST',headers:{'Authorization':'Bearer '+accessToken,'apikey':SUPABASE_ANON_KEY},body:fd});
+            document.getElementById('uploadFill').style.width='50%';document.getElementById('uploadPercent').textContent='50%';
+            const vUrl=SUPABASE_URL+'/storage/v1/object/public/music/'+fn;let tUrl=null;
+            if(tf){const tfd=new FormData();tfd.append('file',tf);const tfn='thumbs/'+currentUser.id+'/'+Date.now()+'_'+tf.name.replace(/[^a-zA-Z0-9.]/g,'_');await fetch(SUPABASE_URL+'/storage/v1/object/music/'+tfn,{method:'POST',headers:{'Authorization':'Bearer '+accessToken,'apikey':SUPABASE_ANON_KEY},body:tfd});tUrl=SUPABASE_URL+'/storage/v1/object/public/music/'+tfn}
+            document.getElementById('uploadFill').style.width='80%';document.getElementById('uploadPercent').textContent='80%';
+            const res=await fetch(SUPABASE_URL+'/rest/v1/videos',{method:'POST',headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken,'Content-Type':'application/json','Prefer':'return=representation'},body:JSON.stringify({title,artist,artist_id:currentUser.id,video_url:vUrl,thumbnail_url:tUrl,description:desc,views:0})});
+            const newVideo=await res.json();
+            document.getElementById('uploadFill').style.width='100%';document.getElementById('uploadPercent').textContent='100%';
+            allVideos.unshift(newVideo[0]||newVideo);
+            setTimeout(()=>{uploadModal.style.display='none';resetUpload();renderVideoGrid(allVideos,'videoGrid');renderVideoGrid(allVideos,'trendingGrid')},500);
+        }catch(e){alert('Ошибка: '+e.message)}finally{btn.disabled=false;btn.textContent='Загрузить'}
+    });
+    function resetUpload(){document.getElementById('uploadTitle').value='';document.getElementById('uploadDesc').value='';document.getElementById('uploadVideoFile').value='';document.getElementById('uploadThumbFile').value='';document.getElementById('uploadProgress').style.display='none';document.getElementById('uploadFill').style.width='0%'}
+    
+    document.getElementById('adminPanelBtn')?.addEventListener('click',()=>{document.getElementById('adminModal').style.display='flex';loadAdminUsers();document.getElementById('userDropdown').classList.remove('show')});
+}
+
+async function loadAdminUsers(){
+    const r=await fetch(SUPABASE_URL+'/auth/v1/users',{headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken}});
+    const users=await r.json();let h='<table style="width:100%;border-collapse:collapse"><tr><th>Email</th><th>Имя</th><th>Действия</th></tr>';
+    users.forEach(u=>{h+=`<tr><td>${u.email}</td><td>${u.user_metadata?.name||'-'}</td><td><button class="btn-primary" onclick="deleteUser('${u.id}')">Удалить</button></td></tr>`});h+='</table>';
+    document.getElementById('adminContent').innerHTML=h;
+}
+window.deleteUser=async id=>{if(confirm('Удалить?')){await fetch(SUPABASE_URL+'/auth/v1/users/'+id,{method:'DELETE',headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken}});loadAdminUsers()}};
+async function loadAdminVideos(){
+    const r=await fetch(SUPABASE_URL+'/rest/v1/videos?select=*',{headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken}});
+    const v=await r.json();let h='<table style="width:100%;border-collapse:collapse"><tr><th>Название</th><th>Автор</th><th>Просмотры</th><th>Действия</th></tr>';
+    v.forEach(x=>{h+=`<tr><td>${x.title}</td><td>${x.artist}</td><td>${x.views||0}</td><td><button class="btn-primary" onclick="deleteVideo('${x.id}')">Удалить</button></td></tr>`});h+='</table>';
+    document.getElementById('adminContent').innerHTML=h;
+}
+window.deleteVideo=async id=>{if(confirm('Удалить?')){await fetch(SUPABASE_URL+'/rest/v1/videos?id=eq.'+id,{method:'DELETE',headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken}});allVideos=allVideos.filter(x=>x.id!=id);renderVideoGrid(allVideos,'videoGrid');renderVideoGrid(allVideos,'trendingGrid');loadAdminVideos()}};
+function closeAdmin(){document.getElementById('adminModal').style.display='none'}
+
+async function searchVideos(){
+    const q=document.getElementById('searchInput').value.toLowerCase();if(!q)return renderVideoGrid(allVideos,'videoGrid');
+    const filtered=allVideos.filter(v=>v.title.toLowerCase().includes(q)||v.artist.toLowerCase().includes(q));
+    renderVideoGrid(filtered,'videoGrid');showPage('home-page');
+}
+</script>
+</body>
+</html>
