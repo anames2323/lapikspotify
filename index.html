@@ -54,14 +54,18 @@
             color: #1db954;
             margin-bottom: 25px;
         }
+        
+        /* ТАБЫ - ИСПРАВЛЕНО */
         .auth-tabs {
             display: flex;
             gap: 10px;
             margin-bottom: 25px;
+            position: relative;
+            z-index: 10;
         }
         .auth-tab {
             flex: 1;
-            padding: 12px;
+            padding: 14px;
             background: transparent;
             border: none;
             color: #888;
@@ -70,11 +74,19 @@
             cursor: pointer;
             border-radius: 30px;
             transition: all 0.2s;
+            pointer-events: auto;
+            position: relative;
+            z-index: 20;
+        }
+        .auth-tab:hover {
+            color: #fff;
+            background: #2a2a2a;
         }
         .auth-tab.active {
             background: #1db954;
             color: #000;
         }
+        
         .auth-form {
             display: none;
         }
@@ -314,8 +326,8 @@
         </div>
         
         <div class="auth-tabs">
-            <button class="auth-tab active" data-tab="login">Вход</button>
-            <button class="auth-tab" data-tab="register">Регистрация</button>
+            <button type="button" class="auth-tab active" data-tab="login">Вход</button>
+            <button type="button" class="auth-tab" data-tab="register">Регистрация</button>
         </div>
 
         <!-- Форма входа -->
@@ -444,11 +456,13 @@ let isPlaying = false;
 
 // ПЕРЕКЛЮЧЕНИЕ ТАБОВ
 document.querySelectorAll('.auth-tab').forEach(tab => {
-    tab.addEventListener('click', () => {
-        document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
-        tab.classList.add('active');
+    tab.addEventListener('click', function() {
+        console.log('Клик по табу:', this.dataset.tab);
         
-        const tabName = tab.dataset.tab;
+        document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+        this.classList.add('active');
+        
+        const tabName = this.dataset.tab;
         document.getElementById('login-form').classList.toggle('active', tabName === 'login');
         document.getElementById('register-form').classList.toggle('active', tabName === 'register');
         
@@ -525,6 +539,7 @@ document.getElementById('register-form').addEventListener('submit', async (e) =>
         } else {
             alert('Регистрация успешна! Теперь войдите.');
             document.querySelector('[data-tab="login"]').click();
+            document.getElementById('login-email').value = email;
         }
     } catch (error) {
         errorEl.textContent = error.message;
@@ -603,16 +618,4 @@ document.getElementById('play-btn').addEventListener('click', () => {
 audio.addEventListener('ended', () => {
     document.getElementById('play-btn').innerHTML = '<i class="fas fa-play"></i>';
     isPlaying = false;
-});
-
-document.getElementById('volume-slider').addEventListener('input', (e) => {
-    audio.volume = e.target.value / 100;
-});
-
-// НАВИГАЦИЯ
-document.querySelectorAll('.nav-item').forEach(item => {
-    item.addEventListener('click', () => {
-        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-        item.classList.add('active');
-        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-    
+})
