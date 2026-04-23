@@ -30,24 +30,25 @@
         <span>Spoofy</span>
     </div>
     <h2>Регистрация</h2>
-    <form id="register-form">
-        <div class="input-group">
-            <i class="fas fa-user"></i>
-            <input type="text" id="name" placeholder="Имя" required>
-        </div>
-        <div class="input-group">
-            <i class="fas fa-envelope"></i>
-            <input type="email" id="email" placeholder="Email" required>
-        </div>
-        <div class="input-group">
-            <i class="fas fa-lock"></i>
-            <input type="password" id="password" placeholder="Пароль (мин. 6)" required minlength="6">
-        </div>
-        <button type="submit" class="auth-btn" id="submit-btn">Зарегистрироваться</button>
-        <div class="auth-error" id="error"></div>
-    </form>
+    
+    <div class="input-group">
+        <i class="fas fa-user"></i>
+        <input type="text" id="name" placeholder="Имя">
+    </div>
+    <div class="input-group">
+        <i class="fas fa-envelope"></i>
+        <input type="email" id="email" placeholder="Email">
+    </div>
+    <div class="input-group">
+        <i class="fas fa-lock"></i>
+        <input type="password" id="password" placeholder="Пароль (мин. 6)">
+    </div>
+    
+    <button class="auth-btn" id="submit-btn" onclick="doRegister()">Зарегистрироваться</button>
+    
+    <div class="auth-error" id="error"></div>
     <p class="auth-link">Уже есть аккаунт? <a href="login.html">Войти</a></p>
-    <div class="debug-box" id="debug">Готов к работе...</div>
+    <div class="debug-box" id="debug">Нажми кнопку...</div>
 </div>
 
 <script>
@@ -55,14 +56,18 @@ const SUPABASE_URL = 'https://axocsccfyyrtcegxvwal.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_Jga_s88V7TAEUSvHIFkMvA_DT5vG44E';
 
 const debugEl = document.getElementById('debug');
-function log(msg) { debugEl.innerHTML = msg; console.log(msg); }
+function log(msg) { 
+    debugEl.innerHTML = msg; 
+    console.log(msg); 
+}
 
-log('✅ Всё загружено');
+log('✅ Страница загружена');
 
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-document.getElementById('register-form').addEventListener('submit', async function(e) {
-    e.preventDefault();
+// Глобальная функция для кнопки
+window.doRegister = async function() {
+    log('🚀 Кнопка нажата!');
     
     const name = document.getElementById('name').value.trim();
     const email = document.getElementById('email').value.trim();
@@ -70,21 +75,25 @@ document.getElementById('register-form').addEventListener('submit', async functi
     const errorEl = document.getElementById('error');
     const btn = document.getElementById('submit-btn');
     
-    log('📤 Отправка: ' + email);
+    log('Имя: ' + name + ', Email: ' + email);
     
     if (!name || !email || !password) {
         errorEl.textContent = 'Заполните все поля';
+        log('❌ Не все поля заполнены');
         return;
     }
     
     if (password.length < 6) {
         errorEl.textContent = 'Пароль должен быть не менее 6 символов';
+        log('❌ Пароль короткий');
         return;
     }
     
     btn.disabled = true;
     btn.textContent = 'Отправка...';
     errorEl.textContent = '';
+    
+    log('📤 Отправляю запрос...');
     
     try {
         const { data, error } = await supabase.auth.signUp({
@@ -99,27 +108,28 @@ document.getElementById('register-form').addEventListener('submit', async functi
         });
         
         if (error) {
-            log('❌ Ошибка: ' + error.message);
+            log('❌ Ошибка Supabase: ' + error.message);
             throw error;
         }
         
-        log('✅ Успех!');
+        log('✅ Успех! user: ' + (data.user ? data.user.email : 'нет'));
         
         if (data.session) {
+            log('🎉 Есть сессия, перехожу...');
             window.location.href = 'main.html';
         } else {
+            log('⚠️ Нет сессии');
             alert('Регистрация успешна! Теперь войдите.');
             window.location.href = 'login.html';
         }
         
     } catch (err) {
-        log('❌ ' + err.message);
+        log('❌ Ошибка: ' + err.message);
         errorEl.textContent = err.message;
-    } finally {
         btn.disabled = false;
         btn.textContent = 'Зарегистрироваться';
     }
-});
+};
 </script>
 </body>
 </html>
