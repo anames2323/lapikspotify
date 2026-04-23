@@ -168,3 +168,65 @@
 <div class="modal" id="uploadModal"><div class="modal-content"><h2>Загрузить трек</h2><input id="uploadTitle" placeholder="Название трека"><label>Аудио файл</label><input type="file" id="uploadAudio" accept="audio/*"><label>Обложка</label><input type="file" id="uploadCover" accept="image/*"><div id="uploadProgress"></div><div class="modal-buttons"><button class="btn-primary" id="confirmUpload">Загрузить</button><button class="btn-secondary" id="cancelUpload">Отмена</button></div></div></div>
 <div class="modal" id="editProfileModal"><div class="modal-content"><h2>Редактировать профиль</h2><input id="editName" placeholder="Имя"><div class="avatar-upload"><img id="avatarPreview" class="avatar-preview" src="https://i.pravatar.cc/60?img=7"><input type="file" id="editAvatarFile" accept="image/*"></div><div id="editProfileProgress"></div><div class="modal-buttons"><button class="btn-primary" id="confirmEditProfile">Сохранить</button><button class="btn-secondary" id="cancelEditProfile">Отмена</button></div></div></div>
 <div class="modal" id="adminModal"><div class="modal-content" style="max-width:800px"><h2>Админ-панель</h2><div style="display:flex;gap:20px;margin:20px 0"><button class="btn-primary" id="showUsersBtn">Пользователи</button><button class="btn-primary" id="showAllTracksBtn">Все треки</button></div><div id="adminContent"></div><div class="modal-buttons"><button class="btn-secondary" id="closeAdminModal">Закрыть</button></div></div></div>
+<script>
+const SUPABASE_URL='https://axocsccfyyrtcegxvwal.supabase.co';
+const SUPABASE_ANON_KEY='sb_publishable_Jga_s88V7TAEUSvHIFkMvA_DT5vG44E';
+let currentUser=null,accessToken=null,audio=new Audio(),currentPlaylist=[],currentIndex=-1,isPlaying=!1;
+const ADMIN_EMAIL='radmirnoros@gmail.com';
+
+async function init(){
+    const t=localStorage.getItem('supabase_token'),u=localStorage.getItem('supabase_user');
+    if(!t||!u){window.location.href='login.html';return}
+    accessToken=t;try{currentUser=JSON.parse(u);}catch(e){localStorage.clear();window.location.href='login.html';return}
+    const timeout=setTimeout(()=>{document.getElementById('loading').innerHTML='<div style="text-align:center"><p>Не удалось загрузиться</p><button class="retry-btn" onclick="localStorage.clear();window.location.href=\'login.html\'">Войти заново</button></div>';},5000);
+    try{
+        updateUserUI();if(currentUser.email===ADMIN_EMAIL)document.getElementById('adminPanelBtn').style.display='flex';
+        await loadTracks();clearTimeout(timeout);document.getElementById('loading').style.display='none';document.getElementById('app').style.display='grid';setupEvents();
+    }catch(e){clearTimeout(timeout);document.getElementById('loading').innerHTML='<div style="text-align:center"><p>Ошибка загрузки</p><button class="retry-btn" onclick="localStorage.clear();window.location.href=\'login.html\'">Войти заново</button></div>';}
+}
+function updateUserUI(){
+    const name=currentUser.user_metadata?.name||currentUser.email?.split('@')[0]||'User';
+    document.getElementById('userName').textContent=name;
+    document.getElementById('userAvatar').src=currentUser.user_metadata?.avatar_url||'https://i.pravatar.cc/40?img=7';
+}
+async function loadTracks(){
+    const r=await fetch(SUPABASE_URL+'/rest/v1/tracks?select=*&order=plays.desc&limit=10',{headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken}});
+    const t=await r.json();currentPlaylist=t;renderCards(t,'popularGrid');
+    const m=await fetch(SUPABASE_URL+'/rest/v1/tracks?select=*&artist_id=eq.'+currentUser.id+'&order=created_at.desc',{headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken}});
+    renderMyTracks(await m.json(),'myTracksList');
+}
+function renderCards(t,c){
+    const g=document.getElementById(c);if(!t.length){g.innerHTML='<div class="empty-state"><i class="fas fa-music" style="font-size:48px;opacity:0.5;margin-bottom:16px"></i><p>Нет треков</p></div>';return}
+    g.innerHTML=t.map(t=>`<div class="card" data-id="${t.id}"><img src="${t.cover_url||'https://via.placeholder.com/150/1db954/ffffff?text=♪'}"><h3>${t.title}</h3><p>${t.artist}</p></div>`).join('');
+    g.querySelectorAll('.card').forEach(c=>c.addEventListener('click',()=>{const tr=t.find(x=>x.id==c.dataset.id);if(tr){currentIndex=t.indexOf(tr);playTrack(tr)}}));
+}
+function renderMyTracks(t,c){
+    const g=document.getElementById(c);if(!t.length){g.innerHTML='<div class="empty-state"><i class="fas fa-music" style="font-size:48px;opacity:0.5;margin-bottom:16px"></i><p>Нет треков</p></div>';return}
+    let h='<div class="tracks-header"><span>#</span><span></span><span>Название</span><span>Исполнитель</span><span></span><span><i class="far fa-clock"></i></span><span></span></div>';
+    t.forEach((x,i)=>{h+=`<div class="track-row" data-id="${x.id}"><span style="color:#b3b3b3">${i+1}</span><img src="${x.cover_url||'https://via.placeholder.com/40/1db954/ffffff?text=♪'}"><span class="track-title">${x.title}</span><span class="track-artist">${x.artist}</span><span></span><span style="color:#b3b3b3"><i class="fas fa-headphones"></i> ${x.plays||0}</span><button class="delete-btn" data-id="${x.id}"><i class="fas fa-trash"></i></button></div>`});
+    g.innerHTML=h;
+    g.querySelectorAll('.track-row').forEach((r,i)=>r.addEventListener('click',e=>{if(!e.target.closest('.delete-btn')){const tr=t[i];if(tr){currentIndex=i;playTrack(tr)}}}));
+    g.querySelectorAll('.delete-btn').forEach(b=>b.addEventListener('click',async e=>{e.stopPropagation();if(confirm('Удалить трек?')){await deleteTrack(b.dataset.id);loadTracks();}}));
+}
+async function deleteTrack(id){await fetch(SUPABASE_URL+'/rest/v1/tracks?id=eq.'+id,{method:'DELETE',headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken}});}
+function playTrack(t){
+    document.getElementById('playerTitle').textContent=t.title;document.getElementById('playerArtist').textContent=t.artist;
+    document.getElementById('playerCover').src=t.cover_url||'https://via.placeholder.com/56/1db954/ffffff?text=♪';audio.src=t.audio_url;
+    audio.play().then(()=>{isPlaying=!0;document.getElementById('playBtn').innerHTML='<i class="fas fa-pause"></i>';}).catch(e=>alert('Ошибка воспроизведения'));
+    fetch(SUPABASE_URL+'/rest/v1/tracks?id=eq.'+t.id,{method:'PATCH',headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken,'Content-Type':'application/json'},body:JSON.stringify({plays:(t.plays||0)+1})});
+}
+async function loadAdminUsers(){
+    const r=await fetch(SUPABASE_URL+'/auth/v1/users',{headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken}});
+    const users=await r.json();let h='<table class="admin-table"><tr><th>Email</th><th>Имя</th><th>Действия</th></tr>';
+    users.forEach(u=>{h+=`<tr><td>${u.email}</td><td>${u.user_metadata?.name||'-'}</td><td><button class="delete-btn" data-id="${u.id}"><i class="fas fa-trash"></i> Удалить</button></td></tr>`});h+='</table>';
+    document.getElementById('adminContent').innerHTML=h;
+    document.querySelectorAll('.delete-btn[data-id]').forEach(b=>b.addEventListener('click',async()=>{if(confirm('Удалить пользователя?')){await fetch(SUPABASE_URL+'/auth/v1/users/'+b.dataset.id,{method:'DELETE',headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken}});loadAdminUsers();}}));
+}
+async function loadAdminTracks(){
+    const r=await fetch(SUPABASE_URL+'/rest/v1/tracks?select=*&order=created_at.desc',{headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken}});
+    const t=await r.json();let h='<table class="admin-table"><tr><th>Название</th><th>Исполнитель</th><th>Прослушивания</th><th>Действия</th></tr>';
+    t.forEach(x=>{h+=`<tr><td>${x.title}</td><td>${x.artist}</td><td>${x.plays||0}</td><td><button class="delete-btn" data-id="${x.id}"><i class="fas fa-trash"></i> Удалить</button></td></tr>`});h+='</table>';
+    document.getElementById('adminContent').innerHTML=h;
+    document.querySelectorAll('.delete-btn').forEach(b=>b.addEventListener('click',async()=>{if(confirm('Удалить трек?')){await deleteTrack(b.dataset.id);loadAdminTracks();}}));
+}
+    
