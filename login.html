@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-    <title>Spoofy • Вход</title>
+    <title>Spoofy • Регистрация</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -15,26 +15,33 @@
             <span>Spoofy</span>
         </div>
         
-        <h2 class="auth-title">Вход в аккаунт</h2>
+        <h2 class="auth-title">Создать аккаунт</h2>
         
-        <form id="login-form" class="auth-form">
+        <form id="register-form" class="auth-form">
+            <div class="input-group">
+                <i class="fas fa-user"></i>
+                <input type="text" id="name" placeholder="Имя" required autocomplete="name">
+            </div>
             <div class="input-group">
                 <i class="fas fa-envelope"></i>
                 <input type="email" id="email" placeholder="Email" required autocomplete="email">
             </div>
             <div class="input-group">
                 <i class="fas fa-lock"></i>
-                <input type="password" id="password" placeholder="Пароль" required autocomplete="current-password">
+                <input type="password" id="password" placeholder="Пароль (мин. 6 символов)" required autocomplete="new-password" minlength="6">
             </div>
             <button type="submit" class="auth-btn">
-                <span class="btn-text">Войти</span>
+                <span class="btn-text">Зарегистрироваться</span>
                 <span class="btn-loader" style="display:none;"><i class="fas fa-spinner fa-spin"></i></span>
             </button>
             <div class="auth-error" id="error-message"></div>
         </form>
         
         <p class="auth-link">
-            Нет аккаунта? <a href="register.html">Зарегистрироваться</a>
+            Уже есть аккаунт? <a href="login.html">Войти</a>
+        </p>
+        <p class="auth-link">
+            <a href="index.html">На главную</a>
         </p>
     </div>
     
@@ -52,17 +59,23 @@
         }
         checkAuth();
         
-        document.getElementById('login-form').addEventListener('submit', async (e) => {
+        document.getElementById('register-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             
+            const name = document.getElementById('name').value.trim();
             const email = document.getElementById('email').value.trim();
             const password = document.getElementById('password').value;
             const errorEl = document.getElementById('error-message');
             const btnText = document.querySelector('.btn-text');
             const btnLoader = document.querySelector('.btn-loader');
             
-            if (!email || !password) {
+            if (!name || !email || !password) {
                 errorEl.textContent = 'Заполните все поля';
+                return;
+            }
+            
+            if (password.length < 6) {
+                errorEl.textContent = 'Пароль должен быть не менее 6 символов';
                 return;
             }
             
@@ -71,12 +84,32 @@
             errorEl.textContent = '';
             
             try {
-                const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+                const { data, error } = await supabase.auth.signUp({
+                    email,
+                    password,
+                    options: {
+                        data: { 
+                            name: name,
+                            avatar_url: `https://i.pravatar.cc/150?u=${email}`
+                        }
+                    }
+                });
+                
                 if (error) throw error;
                 
-                window.location.href = 'index.html';
+                console.log('Регистрация:', data);
+                
+                if (data.session) {
+                    // Автоматический вход
+                    setTimeout(() => {
+                        window.location.href = 'index.html';
+                    }, 500);
+                } else {
+                    alert('Регистрация успешна! Теперь войдите.');
+                    window.location.href = 'login.html';
+                }
             } catch (error) {
-                errorEl.textContent = 'Неверный email или пароль';
+                errorEl.textContent = error.message;
             } finally {
                 btnText.style.display = 'inline';
                 btnLoader.style.display = 'none';
