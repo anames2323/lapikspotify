@@ -1,5 +1,4 @@
 // ==================== КОНФИГУРАЦИЯ SUPABASE ====================
-// Твои ключи уже вставлены!
 const SUPABASE_URL = 'https://axocscfyyrtcegxvwal.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF4b2NzY2Z5eXJ0Y2VneHZ3YWwiLCJyb2xlIjoiYW5vbiIsImlhdCI6MTc0NTQ0MjE2MSwiZXhwIjoyMDYxMDE4MTYxfQ.LhT5jBx2RjGpGZqP9ZBjY8Z3lBmWk1iA2zFkV8ZQf1s';
 
@@ -37,56 +36,110 @@ function switchAuthTab(tab) {
     const regTab = document.getElementById('tab-register');
     const loginForm = document.getElementById('login-form');
     const regForm = document.getElementById('register-form');
+    const loginError = document.getElementById('login-error');
+    const regError = document.getElementById('reg-error');
     
     if (tab === 'login') {
-        loginTab.classList.add('active'); regTab.classList.remove('active');
-        loginForm.classList.add('active'); regForm.classList.remove('active');
+        loginTab.classList.add('active');
+        regTab.classList.remove('active');
+        loginForm.classList.add('active');
+        regForm.classList.remove('active');
     } else {
-        regTab.classList.add('active'); loginTab.classList.remove('active');
-        regForm.classList.add('active'); loginForm.classList.remove('active');
+        regTab.classList.add('active');
+        loginTab.classList.remove('active');
+        regForm.classList.add('active');
+        loginForm.classList.remove('active');
     }
-    document.getElementById('login-error').innerText = '';
-    document.getElementById('reg-error').innerText = '';
+    
+    // Очищаем ошибки
+    loginError.innerText = '';
+    regError.innerText = '';
 }
 
 async function handleRegister(e) {
     e.preventDefault();
+    
     const name = document.getElementById('reg-name').value.trim();
     const email = document.getElementById('reg-email').value.trim();
     const password = document.getElementById('reg-password').value;
     const errorEl = document.getElementById('reg-error');
+    const submitBtn = document.querySelector('#register-form .btn-primary');
+    
+    // Показываем загрузку
+    submitBtn.disabled = true;
+    submitBtn.innerText = 'Загрузка...';
+    errorEl.innerText = '';
     
     try {
         const { data, error } = await supabase.auth.signUp({
             email,
             password,
             options: {
-                data: { name, avatar_url: `https://i.pravatar.cc/150?u=${email}` }
+                data: { 
+                    name: name,
+                    avatar_url: `https://i.pravatar.cc/150?u=${email}`
+                }
             }
         });
         
         if (error) throw error;
         
         if (data.user) {
-            alert('Регистрация успешна! Теперь войдите.');
-            switchAuthTab('login');
+            // Если email подтверждение отключено в Supabase
+            if (data.session) {
+                // Автоматический вход
+                currentUser = data.user;
+                updateUIWithUser();
+                showMainScreen();
+                loadAllTracks();
+                updateFollowStats();
+            } else {
+                alert('Регистрация успешна! Теперь войдите.');
+                switchAuthTab('login');
+                document.getElementById('login-email').value = email;
+            }
         }
     } catch (error) {
         errorEl.innerText = error.message;
+    } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerText = 'Зарегистрироваться';
     }
 }
 
 async function handleLogin(e) {
     e.preventDefault();
+    
     const email = document.getElementById('login-email').value.trim();
     const password = document.getElementById('login-password').value;
     const errorEl = document.getElementById('login-error');
+    const submitBtn = document.querySelector('#login-form .btn-primary');
+    
+    // Показываем загрузку
+    submitBtn.disabled = true;
+    submitBtn.innerText = 'Вход...';
+    errorEl.innerText = '';
     
     try {
-        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+        const { data, error } = await supabase.auth.signInWithPassword({ 
+            email, 
+            password 
+        });
+        
         if (error) throw error;
+        
+        if (data.user) {
+            currentUser = data.user;
+            updateUIWithUser();
+            showMainScreen();
+            loadAllTracks();
+            updateFollowStats();
+        }
     } catch (error) {
         errorEl.innerText = 'Неверный email или пароль';
+    } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerText = 'Войти';
     }
 }
 
@@ -158,6 +211,10 @@ function setupNavigation() {
                 loadAllTracks();
             } else if (page === 'upload') {
                 document.getElementById('upload-page').classList.add('active');
+            } else if (page === 'search') {
+                document.getElementById('profile-page').classList.add('active');
+            } else if (page === 'library') {
+                document.getElementById('profile-page').classList.add('active');
             }
         });
     });
@@ -196,7 +253,7 @@ function renderAllTracks(tracks) {
 function renderTrackList(container, tracks, showDelete) {
     container.innerHTML = '';
     
-    if (tracks.length === 0) {
+    if (!tracks || tracks.length === 0) {
         container.innerHTML = '<div class="empty-state"><i class="fas fa-music"></i><p>Нет треков</p></div>';
         return;
     }
@@ -291,7 +348,10 @@ function setupUpload() {
         const audioFile = document.getElementById('track-file').files[0];
         const coverFile = document.getElementById('track-cover').files[0];
         
-        if (!audioFile) return;
+        if (!audioFile) {
+            alert('Выберите аудио файл');
+            return;
+        }
         
         const uploadBtn = document.getElementById('upload-btn');
         const progressDiv = document.getElementById('upload-progress');
@@ -299,11 +359,12 @@ function setupUpload() {
         const percentSpan = document.getElementById('upload-percent');
         
         uploadBtn.disabled = true;
+        uploadBtn.innerText = 'Загрузка...';
         progressDiv.style.display = 'flex';
         
         try {
             // 1. Загружаем аудио
-            const audioFileName = `${currentUser.id}/${Date.now()}_${audioFile.name}`;
+            const audioFileName = `${currentUser.id}/${Date.now()}_${audioFile.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
             const { error: audioError } = await supabase.storage
                 .from('music')
                 .upload(audioFileName, audioFile, {
@@ -323,7 +384,7 @@ function setupUpload() {
             // 2. Загружаем обложку (если есть)
             let coverUrl = null;
             if (coverFile) {
-                const coverFileName = `${currentUser.id}/covers/${Date.now()}_${coverFile.name}`;
+                const coverFileName = `${currentUser.id}/covers/${Date.now()}_${coverFile.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
                 const { error: coverError } = await supabase.storage
                     .from('music')
                     .upload(coverFileName, coverFile);
@@ -374,6 +435,7 @@ function setupUpload() {
             alert('Ошибка загрузки: ' + error.message);
         } finally {
             uploadBtn.disabled = false;
+            uploadBtn.innerText = 'Загрузить трек';
             progressDiv.style.display = 'none';
             progressBar.style.width = '0%';
             percentSpan.innerText = '0%';
@@ -419,16 +481,18 @@ async function viewUserProfile(userId) {
         document.getElementById('view-followers-count').innerHTML = `<strong>${followers?.length || 0}</strong> подписчиков`;
         document.getElementById('view-following-count').innerHTML = `<strong>${following?.length || 0}</strong> подписок`;
         
-        const { data: isFollowing } = await supabase
-            .from('follows')
-            .select('*')
-            .eq('follower_id', currentUser.id)
-            .eq('following_id', userId)
-            .single();
-            
-        const followBtn = document.getElementById('follow-btn');
-        followBtn.innerText = isFollowing ? 'Отписаться' : 'Подписаться';
-        followBtn.onclick = () => toggleFollow(userId);
+        if (currentUser) {
+            const { data: isFollowing } = await supabase
+                .from('follows')
+                .select('*')
+                .eq('follower_id', currentUser.id)
+                .eq('following_id', userId)
+                .single();
+                
+            const followBtn = document.getElementById('follow-btn');
+            followBtn.innerText = isFollowing ? 'Отписаться' : 'Подписаться';
+            followBtn.onclick = () => toggleFollow(userId);
+        }
         
         renderTrackList(document.getElementById('user-tracks-container'), tracks, false);
         
@@ -441,6 +505,11 @@ async function viewUserProfile(userId) {
 }
 
 async function toggleFollow(userId) {
+    if (!currentUser) {
+        alert('Необходимо войти');
+        return;
+    }
+    
     try {
         const { data: existing } = await supabase
             .from('follows')
@@ -475,66 +544,15 @@ async function toggleFollow(userId) {
 async function updateFollowStats() {
     if (!currentUser) return;
     
-    const { data: followers } = await supabase
-        .from('follows')
-        .select('*')
-        .eq('following_id', currentUser.id);
-        
-    const { data: following } = await supabase
-        .from('follows')
-        .select('*')
-        .eq('follower_id', currentUser.id);
-        
-    document.getElementById('followers-count').innerHTML = `<strong>${followers?.length || 0}</strong> подписчиков`;
-    document.getElementById('following-count').innerHTML = `<strong>${following?.length || 0}</strong> подписок`;
-}
-
-// ==================== ПЛЕЕР ====================
-function playTrackFromList(playlist, index) {
-    currentPlaylist = playlist;
-    currentTrackIndex = index;
-    const track = playlist[index];
-    
-    document.getElementById('player-title').innerText = track.title;
-    document.getElementById('player-artist').innerText = track.artist;
-    document.getElementById('player-cover').src = track.cover_url || 'https://via.placeholder.com/56/1db954/ffffff?text=Music';
-    
-    audio.src = track.audio_url;
-    audio.play().then(async () => {
-        isPlaying = true;
-        document.getElementById('play-pause-btn').innerHTML = '<i class="fas fa-pause"></i>';
-        
-        await supabase
-            .from('tracks')
-            .update({ plays: (track.plays || 0) + 1 })
-            .eq('id', track.id);
+    try {
+        const { data: followers } = await supabase
+            .from('follows')
+            .select('*')
+            .eq('following_id', currentUser.id);
             
-        loadAllTracks();
-    }).catch(e => console.log("Ошибка воспроизведения:", e));
-}
-
-function setupPlayerEvents() {
-    const playBtn = document.getElementById('play-pause-btn');
-    playBtn.addEventListener('click', togglePlay);
-    
-    audio.addEventListener('timeupdate', updateProgress);
-    audio.addEventListener('loadedmetadata', updateDuration);
-    audio.addEventListener('ended', playNext);
-    
-    const progressSlider = document.getElementById('progress-slider');
-    progressSlider.addEventListener('input', (e) => {
-        audio.currentTime = (e.target.value / 100) * audio.duration;
-    });
-    
-    const volumeSlider = document.getElementById('volume-slider');
-    volumeSlider.addEventListener('input', (e) => {
-        audio.volume = e.target.value / 100;
-        document.getElementById('volume-bar').style.width = e.target.value + '%';
-    });
-    
-    document.querySelector('.fa-step-backward').parentElement.addEventListener('click', playPrevious);
-    document.querySelector('.fa-step-forward').parentElement.addEventListener('click', playNext);
-}
-
-function togglePlay() {
-    if (!audio.src && currentPlaylist.length
+        const { data: following } = await supabase
+            .from('follows')
+            .select('*')
+            .eq('follower_id', currentUser.id);
+            
+        document.getElementById('followers-count').inne
