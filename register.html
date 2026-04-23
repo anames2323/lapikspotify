@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>YouClone • Вход</title>
+    <title>YouClone • Регистрация</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         *{margin:0;padding:0;box-sizing:border-box;font-family:Roboto,Arial,sans-serif}
@@ -23,15 +23,16 @@
 <body>
 <div class="card">
     <div class="logo"><i class="fab fa-youtube"></i> YouClone</div>
-    <h2>Вход</h2>
+    <h2>Регистрация</h2>
     
+    <div class="input-group"><i class="fas fa-user"></i><input type="text" id="name" placeholder="Имя"></div>
     <div class="input-group"><i class="fas fa-envelope"></i><input type="email" id="email" placeholder="Email"></div>
-    <div class="input-group"><i class="fas fa-lock"></i><input type="password" id="password" placeholder="Пароль"></div>
+    <div class="input-group"><i class="fas fa-lock"></i><input type="password" id="password" placeholder="Пароль (мин. 6)"></div>
     
-    <button class="btn" id="loginBtn" onclick="doLogin()">Войти</button>
+    <button class="btn" id="regBtn" onclick="doRegister()">Зарегистрироваться</button>
     
     <div class="error" id="error"></div>
-    <p class="link">Нет аккаунта? <a href="register.html">Зарегистрироваться</a></p>
+    <p class="link">Уже есть аккаунт? <a href="login.html">Войти</a></p>
     <div class="debug" id="debug">Ожидание...</div>
 </div>
 
@@ -48,49 +49,52 @@ log('Страница загружена');
 const saved=localStorage.getItem('supabase_token');
 if(saved){log('Токен найден, перехожу...');window.location.href='main.html'}
 
-window.doLogin=async function(){
+window.doRegister=async function(){
+    const name=document.getElementById('name').value.trim();
     const email=document.getElementById('email').value.trim();
     const password=document.getElementById('password').value;
     const err=document.getElementById('error');
-    const btn=document.getElementById('loginBtn');
+    const btn=document.getElementById('regBtn');
     
-    if(!email||!password){err.textContent='Заполните все поля';return}
+    if(!name||!email||!password){err.textContent='Заполните все поля';return}
+    if(password.length<6){err.textContent='Пароль не менее 6 символов';return}
     
     btn.disabled=true;
-    btn.textContent='Вход...';
+    btn.textContent='Регистрация...';
     err.textContent='';
     
     log('Отправка запроса...');
     
     try{
-        const response=await fetch(SUPABASE_URL+'/auth/v1/token?grant_type=password',{
+        const response=await fetch(SUPABASE_URL+'/auth/v1/signup',{
             method:'POST',
             headers:{
                 'Content-Type':'application/json',
                 'apikey':SUPABASE_ANON_KEY
             },
-            body:JSON.stringify({email,password})
+            body:JSON.stringify({
+                email,password,
+                data:{name,avatar_url:'https://i.pravatar.cc/150?u='+email}
+            })
         });
         
         const data=await response.json();
         log('Ответ: '+JSON.stringify(data));
         
         if(!response.ok){
-            throw new Error(data.error_description||'Ошибка входа');
+            throw new Error(data.msg||'Ошибка регистрации');
         }
         
-        if(data.access_token){
-            localStorage.setItem('supabase_token',data.access_token);
-            localStorage.setItem('supabase_user',JSON.stringify(data.user));
-            log('✅ Успех! Перехожу...');
-            window.location.href='main.html';
+        if(data.id){
+            alert('Регистрация успешна! Теперь войдите.');
+            window.location.href='login.html';
         }
         
     }catch(er){
         log('❌ '+er.message);
-        err.textContent='Неверный email или пароль';
+        err.textContent=er.message;
         btn.disabled=false;
-        btn.textContent='Войти';
+        btn.textContent='Зарегистрироваться';
     }
 };
 </script>
