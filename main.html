@@ -291,3 +291,81 @@ function renderProfileTracks(t,c){const g=document.getElementById(c);if(!t.lengt
 async function checkFollow(userId){const r=await fetch(SUPABASE_URL+'/rest/v1/follows?select=*&follower_id=eq.'+currentUser.id+'&following_id=eq.'+userId,{headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken}});const d=await r.json();return d.length>0;}
 
 async function toggleFollow(userId){const following=await checkFollow(userId);if(following){await fetch(SUPABASE_URL+'/rest/v1/follows?follower_id=eq.'+currentUser.id+'&following_id=eq.'+userId,{method:'DELETE',headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken}});}else{await fetch(SUPABASE_URL+'/rest/v1/follows',{method:'POST',headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken,'Content-Type':'application/json'},body:JSON.stringify({follower_id:currentUser.id,following_id:userId})});}viewProfile(userId);}
+
+    async function loadAdminUsers(){
+    const r=await fetch(SUPABASE_URL+'/auth/v1/users',{headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken}});
+    const users=await r.json();let h='<table class="admin-table"><tr><th>Email</th><th>Имя</th><th>Роль</th><th>Действия</th></tr>';
+    users.forEach(u=>{h+=`<tr><td>${u.email}</td><td><input type="text" id="name-${u.id}" value="${u.user_metadata?.name||''}" placeholder="Имя"></td><td><select id="role-${u.id}"><option value="user" ${u.app_metadata?.role!=='admin'?'selected':''}>User</option><option value="admin" ${u.app_metadata?.role==='admin'?'selected':''}>Admin</option></select></td><td><button class="btn-primary" onclick="updateUser('${u.id}')">Сохранить</button><button class="delete-btn" onclick="deleteUser('${u.id}')"><i class="fas fa-trash"></i></button></td></tr>`});h+='</table>';
+    document.getElementById('adminContent').innerHTML=h;
+}
+
+window.updateUser=async function(id){const name=document.getElementById('name-'+id).value,role=document.getElementById('role-'+id).value;await fetch(SUPABASE_URL+'/auth/v1/users/'+id,{method:'PUT',headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken,'Content-Type':'application/json'},body:JSON.stringify({user_metadata:{name},app_metadata:{role}})});loadAdminUsers();};
+window.deleteUser=async function(id){if(confirm('Удалить пользователя?')){await fetch(SUPABASE_URL+'/auth/v1/users/'+id,{method:'DELETE',headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken}});loadAdminUsers();}};
+
+async function loadAdminTracks(){
+    const r=await fetch(SUPABASE_URL+'/rest/v1/tracks?select=*&order=created_at.desc',{headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken}});
+    const t=await r.json();let h='<table class="admin-table"><tr><th>Название</th><th>Исполнитель</th><th>Прослушивания</th><th>Действия</th></tr>';
+    t.forEach(x=>{h+=`<tr><td>${x.title}</td><td>${x.artist}</td><td>${x.plays||0}</td><td><button class="delete-btn" onclick="deleteTrack('${x.id}')"><i class="fas fa-trash"></i></button></td></tr>`});h+='</table>';
+    document.getElementById('adminContent').innerHTML=h;
+}
+
+function setupEvents(){
+    document.querySelectorAll('[data-page]').forEach(e=>e.addEventListener('click',ev=>{ev.preventDefault();document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));e.classList.add('active');document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));if(e.dataset.page==='profile'){viewProfile(currentUser.id);return}document.getElementById(e.dataset.page+'-page').classList.add('active');}));
+    document.getElementById('userMenuBtn').addEventListener('click',e=>{e.stopPropagation();document.getElementById('userDropdown').classList.toggle('show');});
+    document.addEventListener('click',()=>document.getElementById('userDropdown').classList.remove('show'));
+    document.getElementById('profileBtn').addEventListener('click',e=>{e.preventDefault();viewProfile(currentUser.id);document.getElementById('userDropdown').classList.remove('show');});
+    document.getElementById('logoutBtn').addEventListener('click',e=>{e.preventDefault();localStorage.clear();window.location.href='login.html';});
+    document.getElementById('playBtn').addEventListener('click',()=>{if(!audio.src)return;isPlaying?(audio.pause(),document.getElementById('playBtn').innerHTML='<i class="fas fa-play"></i>'):(audio.play(),document.getElementById('playBtn').innerHTML='<i class="fas fa-pause"></i>');isPlaying=!isPlaying;});
+    document.getElementById('prevBtn').addEventListener('click',()=>{if(currentPlaylist.length){currentIndex=(currentIndex-1+currentPlaylist.length)%currentPlaylist.length;playTrack(currentPlaylist[currentIndex]);}});
+    document.getElementById('nextBtn').addEventListener('click',()=>{if(currentPlaylist.length){currentIndex=(currentIndex+1)%currentPlaylist.length;playTrack(currentPlaylist[currentIndex]);}});
+    audio.addEventListener('timeupdate',()=>{if(!audio.duration)return;const p=(audio.currentTime/audio.duration)*100;document.getElementById('progressFill').style.width=p+'%';document.getElementById('currentTime').textContent=formatTime(audio.currentTime);});
+    audio.addEventListener('loadedmetadata',()=>document.getElementById('duration').textContent=formatTime(audio.duration));
+    audio.addEventListener('ended',()=>{document.getElementById('playBtn').innerHTML='<i class="fas fa-play"></i>';isPlaying=!1;});
+    document.getElementById('progressSlider').addEventListener('click',e=>{if(!audio.duration)return;const r=e.currentTarget.getBoundingClientRect();audio.currentTime=((e.clientX-r.left)/r.width)*audio.duration;});
+    audio.volume=0.7;
+    document.getElementById('volumeSlider').addEventListener('click',e=>{const r=e.currentTarget.getBoundingClientRect();const v=Math.max(0,Math.min(1,(e.clientX-r.left)/r.width));audio.volume=v;document.getElementById('volumeFill').style.width=(v*100)+'%';});
+    document.getElementById('playerArtist').addEventListener('click',()=>{if(currentTrack)viewProfile(currentTrack.artist_id);});
+    document.getElementById('playerLikeBtn').addEventListener('click',()=>{if(currentTrack)toggleLike(currentTrack.id);});
+    
+    const uploadModal=document.getElementById('uploadModal');
+    document.getElementById('uploadBtn').addEventListener('click',()=>uploadModal.style.display='flex');
+    document.getElementById('cancelUpload').addEventListener('click',()=>uploadModal.style.display='none');
+    document.getElementById('confirmUpload').addEventListener('click',async()=>{
+        const title=document.getElementById('uploadTitle').value,af=document.getElementById('uploadAudio').files[0],cf=document.getElementById('uploadCover').files[0];
+        if(!title||!af)return;
+        try{
+            const artist=currentUser.user_metadata?.name||currentUser.email?.split('@')[0]||'User',fd=new FormData();fd.append('file',af);
+            const fn=Date.now()+'_'+af.name.replace(/[^a-zA-Z0-9.]/g,'_');
+            await fetch(SUPABASE_URL+'/storage/v1/object/music/'+currentUser.id+'/'+fn,{method:'POST',headers:{'Authorization':'Bearer '+accessToken,'apikey':SUPABASE_ANON_KEY},body:fd});
+            const aUrl=SUPABASE_URL+'/storage/v1/object/public/music/'+currentUser.id+'/'+fn;let cUrl=null;
+            if(cf){const cfData=new FormData();cfData.append('file',cf);const cfn=Date.now()+'_'+cf.name.replace(/[^a-zA-Z0-9.]/g,'_');await fetch(SUPABASE_URL+'/storage/v1/object/music/'+currentUser.id+'/covers/'+cfn,{method:'POST',headers:{'Authorization':'Bearer '+accessToken,'apikey':SUPABASE_ANON_KEY},body:cfData});cUrl=SUPABASE_URL+'/storage/v1/object/public/music/'+currentUser.id+'/covers/'+cfn;}
+            await fetch(SUPABASE_URL+'/rest/v1/tracks',{method:'POST',headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken,'Content-Type':'application/json'},body:JSON.stringify({title,artist,artist_id:currentUser.id,audio_url:aUrl,cover_url:cUrl,plays:0})});
+            uploadModal.style.display='none';loadTracks();
+        }catch(e){alert('Ошибка');}
+    });
+    
+    const editModal=document.getElementById('editProfileModal');
+    document.getElementById('editProfileBtn').addEventListener('click',()=>{document.getElementById('editName').value=currentUser.user_metadata?.name||'';document.getElementById('avatarPreview').src=currentUser.user_metadata?.avatar_url||'https://i.pravatar.cc/60?img=7';editModal.style.display='flex';document.getElementById('userDropdown').classList.remove('show');});
+    document.getElementById('cancelEditProfile').addEventListener('click',()=>editModal.style.display='none');
+    document.getElementById('confirmEditProfile').addEventListener('click',async()=>{
+        const name=document.getElementById('editName').value.trim(),avatarFile=document.getElementById('editAvatarFile').files[0];if(!name)return;
+        try{
+            let avatarUrl=currentUser.user_metadata?.avatar_url;
+            if(avatarFile){const fd=new FormData();fd.append('file',avatarFile);const fn='avatars/'+currentUser.id+'_'+Date.now();await fetch(SUPABASE_URL+'/storage/v1/object/music/'+fn,{method:'POST',headers:{'Authorization':'Bearer '+accessToken,'apikey':SUPABASE_ANON_KEY},body:fd});avatarUrl=SUPABASE_URL+'/storage/v1/object/public/music/'+fn;}
+            await fetch(SUPABASE_URL+'/auth/v1/user',{method:'PUT',headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken,'Content-Type':'application/json'},body:JSON.stringify({data:{name,avatar_url:avatarUrl}})});
+            currentUser.user_metadata={...currentUser.user_metadata,name,avatar_url:avatarUrl};localStorage.setItem('supabase_user',JSON.stringify(currentUser));updateUserUI();editModal.style.display='none';
+        }catch(e){alert('Ошибка');}
+    });
+    
+    const adminModal=document.getElementById('adminModal');
+    document.getElementById('adminPanelBtn')?.addEventListener('click',()=>{adminModal.style.display='flex';loadAdminUsers();document.getElementById('userDropdown').classList.remove('show');});
+    document.getElementById('closeAdminModal')?.addEventListener('click',()=>adminModal.style.display='none');
+    document.getElementById('showUsersBtn')?.addEventListener('click',loadAdminUsers);
+    document.getElementById('showAllTracksBtn')?.addEventListener('click',loadAdminTracks);
+}
+
+function formatTime(s){if(isNaN(s))return'0:00';const m=Math.floor(s/60),sec=Math.floor(s%60);return m+':'+sec.toString().padStart(2,'0');}
+init();
+</script>
+</body>
+</html>
