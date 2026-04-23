@@ -8,7 +8,7 @@
     <style>
         *{margin:0;padding:0;box-sizing:border-box;font-family:-apple-system,sans-serif}
         body{background:#000;color:#fff;height:100vh;overflow:hidden}
-        #app{display:none;grid-template-columns:240px 1fr;grid-template-rows:1fr 90px;height:100vh}
+        #app{display:none;grid-template-columns:240px 1fr;grid-template-rows:1fr 100px;height:100vh}
         .sidebar{background:#000;padding:24px 12px}
         .logo{display:flex;align-items:center;gap:8px;font-size:24px;font-weight:700;margin-bottom:30px;padding-left:12px}
         .logo i{color:#1db954;font-size:28px}
@@ -19,9 +19,9 @@
         .main{background:#121212;overflow-y:auto}
         .main-content{padding:0 32px 32px}
         .top-bar{display:flex;justify-content:flex-end;padding:16px 32px;position:sticky;top:0;background:#121212;z-index:10}
-        .user-btn{display:flex;align-items:center;gap:8px;background:rgba(0,0,0,0.7);border:none;color:#fff;padding:4px 12px 4px 4px;border-radius:30px;cursor:pointer}
+        .user-btn{display:flex;align-items:center;gap:8px;background:#000;border:none;color:#fff;padding:4px 12px 4px 4px;border-radius:30px;cursor:pointer}
         .user-btn img{width:28px;height:28px;border-radius:50%}
-        .dropdown{position:absolute;right:32px;top:65px;background:#282828;border-radius:4px;padding:4px;display:none;min-width:200px}
+        .dropdown{position:absolute;right:32px;top:65px;background:#282828;border-radius:4px;padding:4px;display:none}
         .dropdown.show{display:block}
         .dropdown a{display:flex;align-items:center;gap:12px;padding:12px;color:#b3b3b3;text-decoration:none}
         .dropdown a:hover{background:#3e3e3e;color:#fff}
@@ -39,20 +39,27 @@
         .track-row img{width:40px;height:40px;border-radius:4px}
         .track-title{color:#fff}
         .track-artist{color:#b3b3b3}
+        
+        /* ПЛЕЕР */
         .player{grid-column:1/3;background:#181818;border-top:1px solid #282828;display:flex;align-items:center;justify-content:space-between;padding:0 16px}
         .now-playing{display:flex;align-items:center;gap:14px;width:25%}
-        .now-playing img{width:56px;height:56px;border-radius:4px}
+        .now-playing img{width:60px;height:60px;border-radius:4px}
+        .track-info h4{font-size:14px;margin-bottom:4px}
+        .track-info p{font-size:12px;color:#b3b3b3}
         .player-controls{display:flex;flex-direction:column;align-items:center;width:50%}
-        .player-buttons{display:flex;gap:16px;margin-bottom:8px}
-        .player-buttons button{background:none;border:none;color:#b3b3b3;font-size:16px;cursor:pointer}
-        .play-btn{background:#fff!important;color:#000!important;width:32px;height:32px;border-radius:50%!important}
-        .progress-container{display:flex;align-items:center;gap:8px;width:100%}
-        .progress-slider{flex:1;height:4px;background:#535353;border-radius:2px;cursor:pointer;position:relative}
-        .progress-fill{position:absolute;left:0;top:0;width:0%;height:100%;background:#fff;border-radius:2px}
+        .player-buttons{display:flex;align-items:center;gap:24px;margin-bottom:12px}
+        .player-buttons button{background:none;border:none;color:#b3b3b3;font-size:18px;cursor:pointer}
+        .player-buttons button:hover{color:#fff}
+        .play-btn{background:#fff!important;color:#000!important;width:36px;height:36px;border-radius:50%!important;display:flex;align-items:center;justify-content:center}
+        .progress-container{display:flex;align-items:center;gap:12px;width:100%}
+        .progress-slider{flex:1;height:5px;background:#535353;border-radius:3px;cursor:pointer;position:relative}
+        .progress-fill{position:absolute;left:0;top:0;width:0%;height:100%;background:#fff;border-radius:3px}
         .progress-slider:hover .progress-fill{background:#1db954}
-        .volume-control{display:flex;align-items:center;gap:8px;width:25%;justify-content:flex-end}
-        .volume-slider{width:100px;height:4px;background:#535353;border-radius:2px;cursor:pointer;position:relative}
-        .volume-fill{position:absolute;left:0;top:0;width:70%;height:100%;background:#fff;border-radius:2px}
+        .time-display{font-size:12px;color:#b3b3b3;min-width:45px}
+        .volume-control{display:flex;align-items:center;gap:12px;width:25%;justify-content:flex-end}
+        .volume-slider{width:100px;height:5px;background:#535353;border-radius:3px;cursor:pointer;position:relative}
+        .volume-fill{position:absolute;left:0;top:0;width:70%;height:100%;background:#fff;border-radius:3px}
+        
         .empty-state{text-align:center;padding:60px;color:#b3b3b3}
         #loading{display:flex;align-items:center;justify-content:center;height:100vh}
         .spinner{width:40px;height:40px;border:3px solid #282828;border-top-color:#1db954;border-radius:50%;animation:spin 1s linear infinite;margin-right:16px}
@@ -63,7 +70,6 @@
         .modal-buttons{display:flex;gap:12px;margin-top:20px}
         .btn-primary{flex:1;padding:14px;background:#1db954;border:none;border-radius:30px;font-weight:bold;cursor:pointer}
         .btn-secondary{flex:1;padding:14px;background:transparent;border:1px solid #535353;color:#fff;border-radius:30px;cursor:pointer}
-        .time-display{font-size:12px;color:#b3b3b3;min-width:40px}
     </style>
 </head>
 <body>
@@ -102,14 +108,21 @@
             </div>
         </div>
     </div>
+    
+    <!-- ПЛЕЕР -->
     <div class="player">
         <div class="now-playing">
-            <img id="playerCover" src="https://via.placeholder.com/56/1db954/ffffff?text=♪">
-            <div><h4 id="playerTitle">Не выбрано</h4><p id="playerArtist">—</p></div>
+            <img id="playerCover" src="https://via.placeholder.com/60/1db954/ffffff?text=♪">
+            <div class="track-info">
+                <h4 id="playerTitle">Не выбрано</h4>
+                <p id="playerArtist">—</p>
+            </div>
         </div>
         <div class="player-controls">
             <div class="player-buttons">
+                <button id="prevBtn"><i class="fas fa-step-backward"></i></button>
                 <button class="play-btn" id="playBtn"><i class="fas fa-play"></i></button>
+                <button id="nextBtn"><i class="fas fa-step-forward"></i></button>
             </div>
             <div class="progress-container">
                 <span class="time-display" id="currentTime">0:00</span>
@@ -118,22 +131,22 @@
             </div>
         </div>
         <div class="volume-control">
-            <i class="fas fa-volume-up"></i>
+            <i class="fas fa-volume-up" id="volumeIcon"></i>
             <div class="volume-slider" id="volumeSlider"><div class="volume-fill" id="volumeFill"></div></div>
         </div>
     </div>
 </div>
 
-<!-- Модальное окно загрузки трека -->
+<!-- Модалки -->
 <div class="modal" id="uploadModal">
     <div class="modal-content">
-        <h2 style="margin-bottom:20px">Загрузить трек</h2>
+        <h2>Загрузить трек</h2>
         <input id="uploadTitle" placeholder="Название трека">
-        <label style="color:#b3b3b3;margin:16px 0 8px;display:block">Аудио файл</label>
+        <label>Аудио файл</label>
         <input type="file" id="uploadAudio" accept="audio/*">
-        <label style="color:#b3b3b3;margin:16px 0 8px;display:block">Обложка</label>
+        <label>Обложка</label>
         <input type="file" id="uploadCover" accept="image/*">
-        <div id="uploadProgress" style="margin:16px 0"></div>
+        <div id="uploadProgress"></div>
         <div class="modal-buttons">
             <button class="btn-primary" id="confirmUpload">Загрузить</button>
             <button class="btn-secondary" id="cancelUpload">Отмена</button>
@@ -141,13 +154,12 @@
     </div>
 </div>
 
-<!-- Модальное окно редактирования профиля -->
 <div class="modal" id="editProfileModal">
     <div class="modal-content">
-        <h2 style="margin-bottom:20px">Редактировать профиль</h2>
+        <h2>Редактировать профиль</h2>
         <input id="editName" placeholder="Имя">
-        <input id="editAvatar" placeholder="URL аватара (необязательно)">
-        <div id="editProfileProgress" style="margin:16px 0"></div>
+        <input id="editAvatar" placeholder="URL аватара">
+        <div id="editProfileProgress"></div>
         <div class="modal-buttons">
             <button class="btn-primary" id="confirmEditProfile">Сохранить</button>
             <button class="btn-secondary" id="cancelEditProfile">Отмена</button>
@@ -158,7 +170,7 @@
 <script>
 const SUPABASE_URL='https://axocsccfyyrtcegxvwal.supabase.co';
 const SUPABASE_ANON_KEY='sb_publishable_Jga_s88V7TAEUSvHIFkMvA_DT5vG44E';
-let currentUser=null,accessToken=null,audio=new Audio(),currentPlaylist=[],isPlaying=!1;
+let currentUser=null,accessToken=null,audio=new Audio(),currentPlaylist=[],currentIndex=-1,isPlaying=!1;
 
 async function init(){
     const t=localStorage.getItem('supabase_token'),u=localStorage.getItem('supabase_user');
@@ -192,7 +204,7 @@ function renderCards(t,c){
     const g=document.getElementById(c);
     if(!t.length){g.innerHTML='<div class="empty-state">Нет треков</div>';return}
     g.innerHTML=t.map(t=>`<div class="card" data-id="${t.id}"><img src="${t.cover_url||'https://via.placeholder.com/150/1db954/ffffff?text=♪'}"><h3>${t.title}</h3><p>${t.artist}</p></div>`).join('');
-    g.querySelectorAll('.card').forEach(c=>c.addEventListener('click',()=>{const tr=t.find(x=>x.id==c.dataset.id);if(tr)playTrack(tr)}))
+    g.querySelectorAll('.card').forEach(c=>c.addEventListener('click',()=>{const tr=t.find(x=>x.id==c.dataset.id);if(tr){currentIndex=t.indexOf(tr);playTrack(tr)}}))
 }
 
 function renderTracks(t,c){
@@ -201,15 +213,15 @@ function renderTracks(t,c){
     let h='<div class="tracks-header"><span>#</span><span></span><span>Название</span><span>Исполнитель</span><span></span><span></span></div>';
     t.forEach((x,i)=>{h+=`<div class="track-row" data-id="${x.id}"><span>${i+1}</span><img src="${x.cover_url||'https://via.placeholder.com/40/1db954/ffffff?text=♪'}"><span class="track-title">${x.title}</span><span class="track-artist">${x.artist}</span><span></span><span><i class="fas fa-headphones"></i> ${x.plays||0}</span></div>`});
     g.innerHTML=h;
-    g.querySelectorAll('.track-row').forEach(r=>r.addEventListener('click',()=>{const tr=t.find(x=>x.id==r.dataset.id);if(tr)playTrack(tr)}))
+    g.querySelectorAll('.track-row').forEach((r,i)=>r.addEventListener('click',()=>{const tr=t[i];if(tr){currentIndex=i;playTrack(tr)}}))
 }
 
 function playTrack(t){
     document.getElementById('playerTitle').textContent=t.title;
     document.getElementById('playerArtist').textContent=t.artist;
-    document.getElementById('playerCover').src=t.cover_url||'https://via.placeholder.com/56/1db954/ffffff?text=♪';
-    audio.src=t.audio_url;audio.play();isPlaying=!0;
-    document.getElementById('playBtn').innerHTML='<i class="fas fa-pause"></i>';
+    document.getElementById('playerCover').src=t.cover_url||'https://via.placeholder.com/60/1db954/ffffff?text=♪';
+    audio.src=t.audio_url;
+    audio.play().then(()=>{isPlaying=!0;document.getElementById('playBtn').innerHTML='<i class="fas fa-pause"></i>';}).catch(e=>alert('Ошибка воспроизведения'));
     fetch(SUPABASE_URL+'/rest/v1/tracks?id=eq.'+t.id,{method:'PATCH',headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken,'Content-Type':'application/json'},body:JSON.stringify({plays:(t.plays||0)+1})});
 }
 
@@ -224,10 +236,19 @@ function setupEvents(){
     document.getElementById('userMenuBtn').addEventListener('click',e=>{e.stopPropagation();document.getElementById('userDropdown').classList.toggle('show')});
     document.addEventListener('click',()=>document.getElementById('userDropdown').classList.remove('show'));
     document.getElementById('logoutBtn').addEventListener('click',e=>{e.preventDefault();localStorage.clear();window.location.href='login.html'});
-    document.getElementById('playBtn').addEventListener('click',()=>{if(!audio.src)return;isPlaying?(audio.pause(),document.getElementById('playBtn').innerHTML='<i class="fas fa-play"></i>'):(audio.play(),document.getElementById('playBtn').innerHTML='<i class="fas fa-pause"></i>');isPlaying=!isPlaying});
+    
+    // Плеер
+    document.getElementById('playBtn').addEventListener('click',()=>{
+        if(!audio.src)return;
+        isPlaying?(audio.pause(),document.getElementById('playBtn').innerHTML='<i class="fas fa-play"></i>'):(audio.play(),document.getElementById('playBtn').innerHTML='<i class="fas fa-pause"></i>');
+        isPlaying=!isPlaying;
+    });
+    document.getElementById('prevBtn').addEventListener('click',()=>{if(currentPlaylist.length){currentIndex=(currentIndex-1+currentPlaylist.length)%currentPlaylist.length;playTrack(currentPlaylist[currentIndex])}});
+    document.getElementById('nextBtn').addEventListener('click',()=>{if(currentPlaylist.length){currentIndex=(currentIndex+1)%currentPlaylist.length;playTrack(currentPlaylist[currentIndex])}});
     
     audio.addEventListener('timeupdate',()=>{
-        const p=(audio.currentTime/audio.duration)*100||0;
+        if(!audio.duration)return;
+        const p=(audio.currentTime/audio.duration)*100;
         document.getElementById('progressFill').style.width=p+'%';
         document.getElementById('currentTime').textContent=formatTime(audio.currentTime);
     });
@@ -235,22 +256,24 @@ function setupEvents(){
     audio.addEventListener('ended',()=>{document.getElementById('playBtn').innerHTML='<i class="fas fa-play"></i>';isPlaying=!1;document.getElementById('progressFill').style.width='0%';document.getElementById('currentTime').textContent='0:00'});
     
     document.getElementById('progressSlider').addEventListener('click',e=>{
+        if(!audio.duration)return;
         const r=e.currentTarget.getBoundingClientRect();
-        const p=(e.clientX-r.left)/r.width;
-        audio.currentTime=p*audio.duration;
+        audio.currentTime=((e.clientX-r.left)/r.width)*audio.duration;
     });
     
+    // Громкость
+    audio.volume=0.7;
     document.getElementById('volumeSlider').addEventListener('click',e=>{
         const r=e.currentTarget.getBoundingClientRect();
-        const p=Math.max(0,Math.min(1,(e.clientX-r.left)/r.width));
-        audio.volume=p;
-        document.getElementById('volumeFill').style.width=(p*100)+'%';
+        const v=Math.max(0,Math.min(1,(e.clientX-r.left)/r.width));
+        audio.volume=v;
+        document.getElementById('volumeFill').style.width=(v*100)+'%';
     });
     
-    // Загрузка трека
+    // Загрузка
     const uploadModal=document.getElementById('uploadModal');
     document.getElementById('uploadBtn').addEventListener('click',()=>uploadModal.style.display='flex');
-    document.getElementById('cancelUpload').addEventListener('click',()=>{uploadModal.style.display='none';clearUploadForm()});
+    document.getElementById('cancelUpload').addEventListener('click',()=>{uploadModal.style.display='none';document.getElementById('uploadTitle').value='';});
     document.getElementById('confirmUpload').addEventListener('click',async()=>{
         const title=document.getElementById('uploadTitle').value;
         const af=document.getElementById('uploadAudio').files[0];
@@ -271,45 +294,28 @@ function setupEvents(){
                 await fetch(SUPABASE_URL+'/storage/v1/object/music/'+currentUser.id+'/covers/'+cfn,{method:'POST',headers:{'Authorization':'Bearer '+accessToken,'apikey':SUPABASE_ANON_KEY},body:cfData});
                 cUrl=SUPABASE_URL+'/storage/v1/object/public/music/'+currentUser.id+'/covers/'+cfn;
             }
-            await fetch(SUPABASE_URL+'/rest/v1/tracks',{method:'POST',headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken,'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify({title,artist,artist_id:currentUser.id,audio_url:aUrl,cover_url:cUrl,plays:0})});
+            await fetch(SUPABASE_URL+'/rest/v1/tracks',{method:'POST',headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken,'Content-Type':'application/json'},body:JSON.stringify({title,artist,artist_id:currentUser.id,audio_url:aUrl,cover_url:cUrl,plays:0})});
             p.innerHTML='<span style="color:#1db954">✅ Загружено!</span>';
-            setTimeout(()=>{uploadModal.style.display='none';clearUploadForm();loadTracks()},1000);
+            setTimeout(()=>{uploadModal.style.display='none';loadTracks()},1000);
         }catch(e){p.innerHTML='<span style="color:#ff4d4d">❌ '+e.message+'</span>'}
     });
     
     // Редактирование профиля
     const editModal=document.getElementById('editProfileModal');
-    document.getElementById('editProfileBtn').addEventListener('click',e=>{
-        e.preventDefault();
-        document.getElementById('userDropdown').classList.remove('show');
-        document.getElementById('editName').value=currentUser.user_metadata?.name||'';
-        document.getElementById('editAvatar').value=currentUser.user_metadata?.avatar_url||'';
-        editModal.style.display='flex';
-    });
+    document.getElementById('editProfileBtn').addEventListener('click',e=>{e.preventDefault();document.getElementById('userDropdown').classList.remove('show');editModal.style.display='flex'});
     document.getElementById('cancelEditProfile').addEventListener('click',()=>editModal.style.display='none');
     document.getElementById('confirmEditProfile').addEventListener('click',async()=>{
         const name=document.getElementById('editName').value.trim();
         const avatar=document.getElementById('editAvatar').value.trim();
-        const p=document.getElementById('editProfileProgress');
-        if(!name){p.innerHTML='<span style="color:#ff4d4d">Введите имя</span>';return}
-        p.innerHTML='Сохранение...';
+        if(!name)return;
         try{
-            const res=await fetch(SUPABASE_URL+'/auth/v1/user',{method:'PUT',headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken,'Content-Type':'application/json'},body:JSON.stringify({data:{name,avatar_url:avatar||null}})});
-            if(!res.ok)throw new Error('Ошибка обновления');
+            await fetch(SUPABASE_URL+'/auth/v1/user',{method:'PUT',headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken,'Content-Type':'application/json'},body:JSON.stringify({data:{name,avatar_url:avatar||null}})});
             currentUser.user_metadata={...currentUser.user_metadata,name,avatar_url:avatar||null};
             localStorage.setItem('supabase_user',JSON.stringify(currentUser));
             updateUserUI();
-            p.innerHTML='<span style="color:#1db954">✅ Сохранено!</span>';
-            setTimeout(()=>editModal.style.display='none',1000);
-        }catch(e){p.innerHTML='<span style="color:#ff4d4d">❌ '+e.message+'</span>'}
+            editModal.style.display='none';
+        }catch(e){alert('Ошибка')}
     });
-}
-
-function clearUploadForm(){
-    document.getElementById('uploadTitle').value='';
-    document.getElementById('uploadAudio').value='';
-    document.getElementById('uploadCover').value='';
-    document.getElementById('uploadProgress').innerHTML='';
 }
 
 function formatTime(s){if(isNaN(s))return'0:00';const m=Math.floor(s/60),sec=Math.floor(s%60);return m+':'+sec.toString().padStart(2,'0')}
@@ -317,4 +323,4 @@ function formatTime(s){if(isNaN(s))return'0:00';const m=Math.floor(s/60),sec=Mat
 init();
 </script>
 </body>
-</html>
+    </html>
