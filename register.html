@@ -28,7 +28,7 @@
             </div>
             <div class="input-group">
                 <i class="fas fa-lock"></i>
-                <input type="password" id="password" placeholder="Пароль" required autocomplete="new-password">
+                <input type="password" id="password" placeholder="Пароль (мин. 6 символов)" required autocomplete="new-password" minlength="6">
             </div>
             <button type="submit" class="auth-btn">
                 <span class="btn-text">Зарегистрироваться</span>
@@ -42,13 +42,12 @@
         </p>
     </div>
     
-    <script src="script.js"></script>
     <script>
-        const supabase = window.supabase.createClient(
-            'https://axocscfyyrtcegxvwal.supabase.co',
-            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF4b2NzY2Z5eXJ0Y2VneHZ3YWwiLCJyb2xlIjoiYW5vbiIsImlhdCI6MTc0NTQ0MjE2MSwiZXhwIjoyMDYxMDE4MTYxfQ.LhT5jBx2RjGpGZqP9ZBjY8Z3lBmWk1iA2zFkV8ZQf1s'
-        );
+        const SUPABASE_URL = 'https://axocscfyyrtcegxvwal.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF4b2NzY2Z5eXJ0Y2VneHZ3YWwiLCJyb2xlIjoiYW5vbiIsImlhdCI6MTc0NTQ0MjE2MSwiZXhwIjoyMDYxMDE4MTYxfQ.LhT5jBx2RjGpGZqP9ZBjY8Z3lBmWk1iA2zFkV8ZQf1s';
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         
+        // Проверяем, не авторизован ли уже
         async function checkAuth() {
             const { data: { session } } = await supabase.auth.getSession();
             if (session) {
@@ -96,7 +95,6 @@
                 if (error) throw error;
                 
                 if (data.session) {
-                    localStorage.setItem('supabase_session', JSON.stringify(data.session));
                     window.location.href = 'index.html';
                 } else {
                     alert('Регистрация успешна! Теперь войдите.');
