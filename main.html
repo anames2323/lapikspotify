@@ -2,309 +2,233 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-    <title>Spoofy • Главная</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spoofy</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
-        body { background: #000; color: #fff; }
-        #main-screen { display: none; grid-template-columns: 240px 1fr; grid-template-rows: 1fr 90px; height: 100vh; }
-        .sidebar { background: #000; grid-row: 1/3; padding: 24px 12px; border-right: 1px solid #282828; }
-        .logo-small { font-size: 22px; font-weight: 700; margin-bottom: 25px; padding-left: 12px; color: #1db954; display: flex; align-items: center; gap: 8px; }
-        .nav-item { display: flex; align-items: center; gap: 15px; padding: 12px 15px; color: #b3b3b3; text-decoration: none; border-radius: 6px; cursor: pointer; }
-        .nav-item:hover, .nav-item.active { color: #fff; background: #282828; }
-        .main-content { background: linear-gradient(180deg, #1f1f1f 0%, #121212 100%); overflow-y: auto; padding: 0 30px 20px; }
-        .top-bar { display: flex; justify-content: flex-end; padding: 16px 0; position: sticky; top: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(10px); z-index: 10; }
-        .profile-btn { background: rgba(0,0,0,0.7); border: none; color: #fff; display: flex; align-items: center; gap: 10px; padding: 4px 12px 4px 4px; border-radius: 30px; cursor: pointer; }
-        .profile-btn img { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; }
-        .dropdown-menu { position: absolute; right: 30px; top: 65px; background: #282828; border-radius: 6px; padding: 4px; min-width: 160px; }
-        .dropdown-menu.hidden { display: none; }
-        .dropdown-menu a { display: flex; align-items: center; gap: 10px; padding: 12px; color: #fff; text-decoration: none; }
-        .dropdown-menu a:hover { background: #3e3e3e; }
-        .page { display: none; }
-        .page.active { display: block; }
-        .tracklist { margin-top: 20px; }
-        .track-item { display: grid; grid-template-columns: 40px 50px 2fr 1fr 80px; align-items: center; padding: 10px; border-radius: 6px; cursor: pointer; color: #b3b3b3; border-bottom: 1px solid #282828; }
-        .track-item:hover { background: #282828; color: #fff; }
-        .track-item img { width: 40px; height: 40px; border-radius: 4px; object-fit: cover; }
-        .track-name { color: #fff; font-weight: 500; }
-        .form-group { margin-bottom: 20px; }
-        .form-group label { display: block; margin-bottom: 8px; color: #b3b3b3; }
-        .form-group input { width: 100%; padding: 12px; background: #1e1e1e; border: 1px solid #333; border-radius: 6px; color: #fff; }
-        .auth-btn { background: #1db954; color: #000; font-weight: 700; padding: 16px; border: none; border-radius: 30px; cursor: pointer; width: 100%; }
-        .player-bar { grid-column: 1/3; background: #181818; border-top: 1px solid #282828; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; }
-        .now-playing { display: flex; align-items: center; gap: 12px; width: 25%; }
-        .now-playing img { width: 45px; height: 45px; border-radius: 4px; object-fit: cover; }
-        .play-btn { background: #fff; border: none; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; }
-        .play-btn:hover { transform: scale(1.05); }
-        .player-right { display: flex; align-items: center; gap: 10px; }
-        .empty-state { text-align: center; padding: 50px; color: #888; }
+        *{margin:0;padding:0;box-sizing:border-box;font-family:-apple-system,sans-serif}
+        body{background:#000;color:#fff;height:100vh;overflow:hidden}
+        #app{display:none;grid-template-columns:240px 1fr;grid-template-rows:1fr 90px;height:100vh}
+        .sidebar{background:#000;padding:24px 12px}
+        .logo{display:flex;align-items:center;gap:8px;font-size:24px;font-weight:700;margin-bottom:30px;padding-left:12px}
+        .logo i{color:#1db954;font-size:28px}
+        .nav-item{display:flex;align-items:center;gap:16px;padding:12px 16px;color:#b3b3b3;border-radius:6px;cursor:pointer}
+        .nav-item i{font-size:20px;width:24px}
+        .nav-item:hover{color:#fff}
+        .nav-item.active{color:#fff;background:#1f1f1f}
+        .playlists{margin-top:24px}
+        .playlists-header{display:flex;justify-content:space-between;padding:0 16px 12px;color:#b3b3b3;font-size:14px}
+        .playlist-item{display:flex;align-items:center;gap:12px;padding:8px 16px;color:#b3b3b3;cursor:pointer}
+        .playlist-item:hover{color:#fff}
+        .main{background:#121212;overflow-y:auto}
+        .main-content{padding:0 32px 32px}
+        .top-bar{display:flex;justify-content:flex-end;padding:16px 32px;position:sticky;top:0;background:#121212}
+        .user-btn{display:flex;align-items:center;gap:8px;background:rgba(0,0,0,0.7);border:none;color:#fff;padding:4px 12px 4px 4px;border-radius:30px;cursor:pointer}
+        .user-btn img{width:28px;height:28px;border-radius:50%}
+        .dropdown{position:absolute;right:32px;top:65px;background:#282828;border-radius:4px;padding:4px;display:none}
+        .dropdown.show{display:block}
+        .dropdown a{display:flex;align-items:center;gap:12px;padding:12px;color:#b3b3b3;text-decoration:none}
+        .page{display:none;padding-top:20px}
+        .page.active{display:block}
+        .cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:20px}
+        .card{background:#181818;padding:16px;border-radius:8px;cursor:pointer}
+        .card:hover{background:#282828}
+        .card img{width:100%;aspect-ratio:1;border-radius:4px;margin-bottom:16px;object-fit:cover}
+        .card h3{font-size:16px;margin-bottom:4px}
+        .card p{font-size:14px;color:#b3b3b3}
+        .tracks-header{display:grid;grid-template-columns:30px 50px 2fr 1fr 1fr 50px;padding:12px 16px;color:#b3b3b3;border-bottom:1px solid #282828}
+        .track-row{display:grid;grid-template-columns:30px 50px 2fr 1fr 1fr 50px;padding:8px 16px;align-items:center;cursor:pointer}
+        .track-row:hover{background:#282828}
+        .track-row img{width:40px;height:40px;border-radius:4px}
+        .track-title{color:#fff}
+        .track-artist{color:#b3b3b3}
+        .player{grid-column:1/3;background:#181818;border-top:1px solid #282828;display:flex;align-items:center;justify-content:space-between;padding:0 16px}
+        .now-playing{display:flex;align-items:center;gap:14px;width:25%}
+        .now-playing img{width:56px;height:56px;border-radius:4px}
+        .player-controls{display:flex;flex-direction:column;align-items:center;width:50%}
+        .player-buttons{display:flex;gap:16px;margin-bottom:8px}
+        .player-buttons button{background:none;border:none;color:#b3b3b3;font-size:16px;cursor:pointer}
+        .play-btn{background:#fff!important;color:#000!important;width:32px;height:32px;border-radius:50%!important}
+        .progress-bar{display:flex;align-items:center;gap:8px;width:100%}
+        .progress-slider{flex:1;height:4px;background:#535353;border-radius:2px;cursor:pointer}
+        .progress-fill{width:0%;height:100%;background:#fff;border-radius:2px}
+        .volume-control{display:flex;align-items:center;gap:8px;width:25%;justify-content:flex-end}
+        .volume-slider{width:100px;height:4px;background:#535353;border-radius:2px;cursor:pointer}
+        .volume-fill{width:70%;height:100%;background:#fff;border-radius:2px}
+        .empty-state{text-align:center;padding:60px;color:#b3b3b3}
+        #loading{display:flex;align-items:center;justify-content:center;height:100vh}
+        .spinner{width:40px;height:40px;border:3px solid #282828;border-top-color:#1db954;border-radius:50%;animation:spin 1s linear infinite;margin-right:16px}
+        @keyframes spin{to{transform:rotate(360deg)}}
+        #uploadModal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);align-items:center;justify-content:center}
+        .modal-content{background:#282828;padding:30px;border-radius:8px;width:90%;max-width:500px}
+        .modal-content input{width:100%;padding:12px;margin-bottom:12px;background:#1e1e1e;border:1px solid #3e3e3e;color:#fff;border-radius:4px}
+        .btn-primary{flex:1;padding:14px;background:#1db954;border:none;border-radius:30px;font-weight:bold;cursor:pointer}
+        .btn-secondary{flex:1;padding:14px;background:transparent;border:1px solid #535353;color:#fff;border-radius:30px;cursor:pointer}
     </style>
 </head>
 <body>
-
-<div id="main-screen">
+<div id="loading"><div class="spinner"></div><span>Загрузка...</span></div>
+<div id="app">
     <div class="sidebar">
-        <div class="logo-small">
-            <i class="fab fa-spotify"></i> Spoofy
-        </div>
+        <div class="logo"><i class="fab fa-spotify"></i> Spoofy</div>
         <nav>
             <a class="nav-item active" data-page="home"><i class="fas fa-home"></i> Главная</a>
-            <a class="nav-item" data-page="upload"><i class="fas fa-upload"></i> Загрузить</a>
+            <a class="nav-item" data-page="library"><i class="fas fa-book-open"></i> Медиатека</a>
         </nav>
     </div>
-
-    <div class="main-content">
+    <div class="main">
         <header class="top-bar">
-            <div>
-                <button id="profile-btn" class="profile-btn">
-                    <img id="user-avatar" src="https://i.pravatar.cc/40?img=7" alt="avatar">
-                    <span id="user-display-name">User</span>
+            <div style="position:relative">
+                <button class="user-btn" id="userMenuBtn">
+                    <img id="userAvatar" src="https://i.pravatar.cc/40?img=7">
+                    <span id="userName">User</span>
                     <i class="fas fa-chevron-down"></i>
                 </button>
-                <div id="profile-menu" class="dropdown-menu hidden">
-                    <a href="#" id="logout-btn"><i class="fas fa-sign-out-alt"></i> Выйти</a>
+                <div class="dropdown" id="userDropdown">
+                    <a href="#" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Выйти</a>
                 </div>
             </div>
         </header>
-
-        <div id="home-page" class="page active">
-            <h1 style="margin:20px 0;">Популярные треки</h1>
-            <div id="tracks-container" class="tracklist"></div>
-        </div>
-
-        <div id="upload-page" class="page">
-            <h1 style="margin:20px 0;">Загрузить трек</h1>
-            <form id="upload-form">
-                <div class="form-group">
-                    <label>Название трека</label>
-                    <input type="text" id="track-title" required>
-                </div>
-                <div class="form-group">
-                    <label>Исполнитель</label>
-                    <input type="text" id="track-artist" required>
-                </div>
-                <div class="form-group">
-                    <label>Аудио файл (MP3, MP4, WAV)</label>
-                    <input type="file" id="track-file" accept="audio/*" required>
-                </div>
-                <div class="form-group">
-                    <label>Обложка (изображение)</label>
-                    <input type="file" id="track-cover" accept="image/*">
-                </div>
-                <div id="upload-progress" style="display:none; margin:10px 0;">
-                    <div style="background:#333; height:4px; border-radius:2px;">
-                        <div id="progress-fill" style="width:0%; height:100%; background:#1db954; border-radius:2px;"></div>
-                    </div>
-                    <span id="progress-text" style="color:#1db954; font-size:12px;">0%</span>
-                </div>
-                <button type="submit" class="auth-btn">Загрузить трек</button>
-            </form>
-        </div>
-    </div>
-
-    <div class="player-bar">
-        <div class="now-playing">
-            <img id="player-cover" src="https://via.placeholder.com/45/1db954/ffffff?text=♪" alt="cover">
-            <div>
-                <div id="player-title">Не выбрано</div>
-                <div id="player-artist" style="font-size:12px; color:#b3b3b3;">—</div>
+        <div class="main-content">
+            <div id="home-page" class="page active">
+                <h1 style="margin:20px 0">Популярные треки</h1>
+                <div class="cards-grid" id="popularGrid"></div>
+            </div>
+            <div id="library-page" class="page">
+                <h1 style="margin:20px 0">Моя медиатека</h1>
+                <button class="user-btn" id="uploadBtn"><i class="fas fa-plus"></i> Загрузить</button>
+                <div id="myTracksList" style="margin-top:20px"></div>
             </div>
         </div>
-        <div>
-            <button id="play-btn" class="play-btn"><i class="fas fa-play"></i></button>
+    </div>
+    <div class="player">
+        <div class="now-playing">
+            <img id="playerCover" src="https://via.placeholder.com/56/1db954/ffffff?text=♪">
+            <div><h4 id="playerTitle">Не выбрано</h4><p id="playerArtist">—</p></div>
         </div>
-        <div class="player-right">
-            <i class="fas fa-volume-up" style="color:#b3b3b3;"></i>
-            <input type="range" id="volume-slider" min="0" max="100" value="70" style="width:80px;">
+        <div class="player-controls">
+            <div class="player-buttons">
+                <button class="play-btn" id="playBtn"><i class="fas fa-play"></i></button>
+            </div>
+            <div class="progress-bar">
+                <span id="currentTime">0:00</span>
+                <div class="progress-slider" id="progressSlider"><div class="progress-fill" id="progressFill"></div></div>
+                <span id="duration">0:00</span>
+            </div>
+        </div>
+        <div class="volume-control">
+            <i class="fas fa-volume-up"></i>
+            <div class="volume-slider" id="volumeSlider"><div class="volume-fill" id="volumeFill"></div></div>
         </div>
     </div>
 </div>
-
+<div id="uploadModal">
+    <div class="modal-content">
+        <h2>Загрузить трек</h2>
+        <input id="uploadTitle" placeholder="Название">
+        <input id="uploadArtist" placeholder="Исполнитель">
+        <input type="file" id="uploadAudio" accept="audio/*">
+        <input type="file" id="uploadCover" accept="image/*">
+        <div id="uploadProgress"></div>
+        <div style="display:flex;gap:12px">
+            <button class="btn-primary" id="confirmUpload">Загрузить</button>
+            <button class="btn-secondary" id="cancelUpload">Отмена</button>
+        </div>
+    </div>
+</div>
 <script>
-const SUPABASE_URL = 'https://axocsccfyyrtcegxvwal.supabase.co';
-const SUPABASE_ANON_KEY = 'sb_publishable_Jga_s88V7TAEUSvHIFkMvA_DT5vG44E';
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const SUPABASE_URL='https://axocsccfyyrtcegxvwal.supabase.co';
+const SUPABASE_ANON_KEY='sb_publishable_Jga_s88V7TAEUSvHIFkMvA_DT5vG44E';
+let currentUser=null,accessToken=null,audio=new Audio(),currentPlaylist=[],isPlaying=!1;
 
-let currentUser = null;
-let audio = new Audio();
-let currentPlaylist = [];
-let isPlaying = false;
-
-// Проверка авторизации
-async function checkAuth() {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) {
-        window.location.href = 'login.html';
-        return;
-    }
-    currentUser = session.user;
-    document.getElementById('main-screen').style.display = 'grid';
-    
-    const name = currentUser.user_metadata?.name || currentUser.email?.split('@')[0] || 'User';
-    const avatar = currentUser.user_metadata?.avatar_url || `https://i.pravatar.cc/150?u=${currentUser.email}`;
-    document.getElementById('user-display-name').textContent = name;
-    document.getElementById('user-avatar').src = avatar;
-    
-    loadTracks();
+async function init(){
+    const t=localStorage.getItem('supabase_token'),u=localStorage.getItem('supabase_user');
+    if(!t||!u){window.location.href='login.html';return}
+    accessToken=t;currentUser=JSON.parse(u);
+    document.getElementById('loading').style.display='none';
+    document.getElementById('app').style.display='grid';
+    document.getElementById('userName').textContent=currentUser.user_metadata?.name||currentUser.email?.split('@')[0]||'User';
+    document.getElementById('userAvatar').src=currentUser.user_metadata?.avatar_url||'https://i.pravatar.cc/40?img=7';
+    await loadTracks();
+    setupEvents();
 }
-checkAuth();
 
-// Загрузка треков
-async function loadTracks() {
-    const { data } = await supabase.from('tracks').select('*').order('created_at', { ascending: false });
-    currentPlaylist = data || [];
-    const container = document.getElementById('tracks-container');
-    container.innerHTML = '';
+async function loadTracks(){
+    try{
+        const r=await fetch(SUPABASE_URL+'/rest/v1/tracks?select=*&order=plays.desc&limit=10',{headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken}});
+        const t=await r.json();currentPlaylist=t;
+        renderCards(t,'popularGrid');
+        const m=await fetch(SUPABASE_URL+'/rest/v1/tracks?select=*&artist_id=eq.'+currentUser.id+'&order=created_at.desc',{headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken}});
+        renderTracks(await m.json(),'myTracksList');
+    }catch(e){console.error(e)}
+}
+
+function renderCards(t,c){
+    const g=document.getElementById(c);
+    if(!t.length){g.innerHTML='<div class="empty-state">Нет треков</div>';return}
+    g.innerHTML=t.map(t=>`<div class="card" data-id="${t.id}"><img src="${t.cover_url||'https://via.placeholder.com/150/1db954/ffffff?text=♪'}"><h3>${t.title}</h3><p>${t.artist}</p></div>`).join('');
+    g.querySelectorAll('.card').forEach(c=>c.addEventListener('click',()=>{const tr=t.find(x=>x.id==c.dataset.id);if(tr)playTrack(tr)}))
+}
+
+function renderTracks(t,c){
+    const g=document.getElementById(c);
+    if(!t.length){g.innerHTML='<div class="empty-state">Нет треков</div>';return}
+    let h='<div class="tracks-header"><span>#</span><span></span><span>Название</span><span>Исполнитель</span><span></span><span></span></div>';
+    t.forEach((x,i)=>{h+=`<div class="track-row" data-id="${x.id}"><span>${i+1}</span><img src="${x.cover_url||'https://via.placeholder.com/40/1db954/ffffff?text=♪'}"><span class="track-title">${x.title}</span><span class="track-artist">${x.artist}</span><span></span><span><i class="fas fa-headphones"></i> ${x.plays||0}</span></div>`});
+    g.innerHTML=h;
+    g.querySelectorAll('.track-row').forEach(r=>r.addEventListener('click',()=>{const tr=t.find(x=>x.id==r.dataset.id);if(tr)playTrack(tr)}))
+}
+
+function playTrack(t){
+    document.getElementById('playerTitle').textContent=t.title;
+    document.getElementById('playerArtist').textContent=t.artist;
+    document.getElementById('playerCover').src=t.cover_url||'https://via.placeholder.com/56/1db954/ffffff?text=♪';
+    audio.src=t.audio_url;audio.play();isPlaying=!0;
+    document.getElementById('playBtn').innerHTML='<i class="fas fa-pause"></i>';
+    fetch(SUPABASE_URL+'/rest/v1/tracks?id=eq.'+t.id,{method:'PATCH',headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken,'Content-Type':'application/json'},body:JSON.stringify({plays:(t.plays||0)+1})});
+}
+
+function setupEvents(){
+    document.querySelectorAll('[data-page]').forEach(e=>e.addEventListener('click',ev=>{
+        ev.preventDefault();
+        document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+        e.classList.add('active');
+        document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+        document.getElementById(e.dataset.page+'-page').classList.add('active');
+    }));
+    document.getElementById('userMenuBtn').addEventListener('click',e=>{e.stopPropagation();document.getElementById('userDropdown').classList.toggle('show')});
+    document.addEventListener('click',()=>document.getElementById('userDropdown').classList.remove('show'));
+    document.getElementById('logoutBtn').addEventListener('click',e=>{e.preventDefault();localStorage.clear();window.location.href='login.html'});
+    document.getElementById('playBtn').addEventListener('click',()=>{if(!audio.src)return;isPlaying?(audio.pause(),document.getElementById('playBtn').innerHTML='<i class="fas fa-play"></i>'):(audio.play(),document.getElementById('playBtn').innerHTML='<i class="fas fa-pause"></i>');isPlaying=!isPlaying});
+    audio.addEventListener('timeupdate',()=>{const p=(audio.currentTime/audio.duration)*100||0;document.getElementById('progressFill').style.width=p+'%';document.getElementById('currentTime').textContent=formatTime(audio.currentTime)});
+    audio.addEventListener('loadedmetadata',()=>document.getElementById('duration').textContent=formatTime(audio.duration));
+    audio.addEventListener('ended',()=>{document.getElementById('playBtn').innerHTML='<i class="fas fa-play"></i>';isPlaying=!1});
+    document.getElementById('progressSlider').addEventListener('click',e=>{const r=e.currentTarget.getBoundingClientRect();audio.currentTime=((e.clientX-r.left)/r.width)*audio.duration});
+    document.getElementById('volumeSlider').addEventListener('click',e=>{const r=e.currentTarget.getBoundingClientRect();audio.volume=Math.max(0,Math.min(1,(e.clientX-r.left)/r.width));document.getElementById('volumeFill').style.width=(audio.volume*100)+'%'});
     
-    if (currentPlaylist.length === 0) {
-        container.innerHTML = '<div class="empty-state"><i class="fas fa-music"></i><p>Нет треков</p></div>';
-        return;
-    }
-    
-    currentPlaylist.forEach((track, i) => {
-        const div = document.createElement('div');
-        div.className = 'track-item';
-        div.innerHTML = `
-            <span><i class="far fa-play-circle"></i></span>
-            <img src="${track.cover_url || 'https://via.placeholder.com/40/1db954/ffffff?text=♪'}" alt="${track.title}">
-            <span class="track-name">${track.title}</span>
-            <span>${track.artist}</span>
-            <span><i class="fas fa-headphones"></i> ${track.plays || 0}</span>
-        `;
-        div.addEventListener('click', () => playTrack(i));
-        container.appendChild(div);
+    const modal=document.getElementById('uploadModal');
+    document.getElementById('uploadBtn').addEventListener('click',()=>modal.style.display='flex');
+    document.getElementById('cancelUpload').addEventListener('click',()=>{modal.style.display='none';document.getElementById('uploadTitle').value='';document.getElementById('uploadArtist').value='';document.getElementById('uploadAudio').value='';document.getElementById('uploadCover').value=''});
+    document.getElementById('confirmUpload').addEventListener('click',async()=>{
+        const t=document.getElementById('uploadTitle').value,a=document.getElementById('uploadArtist').value,af=document.getElementById('uploadAudio').files[0],cf=document.getElementById('uploadCover').files[0],p=document.getElementById('uploadProgress');
+        if(!t||!a||!af){p.innerHTML='<span style="color:#ff4d4d">Заполните все поля</span>';return}
+        p.innerHTML='Загрузка...';
+        try{
+            const fd=new FormData();fd.append('file',af);
+            await fetch(SUPABASE_URL+'/storage/v1/object/music/'+currentUser.id+'/'+Date.now()+'_'+af.name,{method:'POST',headers:{'Authorization':'Bearer '+accessToken,'apikey':SUPABASE_ANON_KEY},body:fd});
+            const aUrl=SUPABASE_URL+'/storage/v1/object/public/music/'+currentUser.id+'/'+Date.now()+'_'+af.name;
+            let cUrl=null;
+            if(cf){const cfData=new FormData();cfData.append('file',cf);await fetch(SUPABASE_URL+'/storage/v1/object/music/'+currentUser.id+'/covers/'+Date.now()+'_'+cf.name,{method:'POST',headers:{'Authorization':'Bearer '+accessToken,'apikey':SUPABASE_ANON_KEY},body:cfData});cUrl=SUPABASE_URL+'/storage/v1/object/public/music/'+currentUser.id+'/covers/'+Date.now()+'_'+cf.name}
+            await fetch(SUPABASE_URL+'/rest/v1/tracks',{method:'POST',headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken,'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify({title:t,artist:a,artist_id:currentUser.id,audio_url:aUrl,cover_url:cUrl,plays:0})});
+            p.innerHTML='<span style="color:#1db954">✅ Загружено!</span>';
+            setTimeout(()=>{modal.style.display='none';loadTracks()},1000);
+        }catch(e){p.innerHTML='<span style="color:#ff4d4d">❌ '+e.message+'</span>'}
     });
 }
 
-// Плеер
-function playTrack(index) {
-    const track = currentPlaylist[index];
-    document.getElementById('player-title').textContent = track.title;
-    document.getElementById('player-artist').textContent = track.artist;
-    document.getElementById('player-cover').src = track.cover_url || 'https://via.placeholder.com/45/1db954/ffffff?text=♪';
-    
-    audio.src = track.audio_url;
-    audio.play();
-    isPlaying = true;
-    document.getElementById('play-btn').innerHTML = '<i class="fas fa-pause"></i>';
-    
-    supabase.from('tracks').update({ plays: (track.plays || 0) + 1 }).eq('id', track.id).then(() => loadTracks());
-}
+function formatTime(s){if(isNaN(s))return'0:00';const m=Math.floor(s/60),sec=Math.floor(s%60);return m+':'+sec.toString().padStart(2,'0')}
 
-document.getElementById('play-btn').addEventListener('click', () => {
-    if (!audio.src) return;
-    if (isPlaying) {
-        audio.pause();
-        document.getElementById('play-btn').innerHTML = '<i class="fas fa-play"></i>';
-        isPlaying = false;
-    } else {
-        audio.play();
-        document.getElementById('play-btn').innerHTML = '<i class="fas fa-pause"></i>';
-        isPlaying = true;
-    }
-});
-
-audio.addEventListener('ended', () => {
-    document.getElementById('play-btn').innerHTML = '<i class="fas fa-play"></i>';
-    isPlaying = false;
-});
-
-document.getElementById('volume-slider').addEventListener('input', (e) => {
-    audio.volume = e.target.value / 100;
-});
-
-// Навигация
-document.querySelectorAll('.nav-item').forEach(item => {
-    item.addEventListener('click', () => {
-        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-        item.classList.add('active');
-        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-        document.getElementById(item.dataset.page + '-page').classList.add('active');
-    });
-});
-
-// Меню профиля
-document.getElementById('profile-btn').addEventListener('click', (e) => {
-    e.stopPropagation();
-    document.getElementById('profile-menu').classList.toggle('hidden');
-});
-document.addEventListener('click', () => document.getElementById('profile-menu').classList.add('hidden'));
-
-// Выход
-document.getElementById('logout-btn').addEventListener('click', async (e) => {
-    e.preventDefault();
-    await supabase.auth.signOut();
-    window.location.href = 'login.html';
-});
-
-// Загрузка трека
-document.getElementById('upload-form').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    
-    const title = document.getElementById('track-title').value.trim();
-    const artist = document.getElementById('track-artist').value.trim();
-    const audioFile = document.getElementById('track-file').files[0];
-    const coverFile = document.getElementById('track-cover').files[0];
-    
-    if (!title || !artist) return alert('Заполните все поля');
-    if (!audioFile) return alert('Выберите аудио файл');
-    
-    const progressDiv = document.getElementById('upload-progress');
-    const progressFill = document.getElementById('progress-fill');
-    const progressText = document.getElementById('progress-text');
-    
-    progressDiv.style.display = 'block';
-    
-    try {
-        // Загрузка аудио
-        const audioFileName = `${currentUser.id}/${Date.now()}_${audioFile.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
-        await supabase.storage.from('music').upload(audioFileName, audioFile);
-        const audioUrl = supabase.storage.from('music').getPublicUrl(audioFileName).data.publicUrl;
-        
-        progressFill.style.width = '50%';
-        progressText.textContent = '50%';
-        
-        // Загрузка обложки
-        let coverUrl = null;
-        if (coverFile) {
-            const coverFileName = `${currentUser.id}/covers/${Date.now()}_${coverFile.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
-            await supabase.storage.from('music').upload(coverFileName, coverFile);
-            coverUrl = supabase.storage.from('music').getPublicUrl(coverFileName).data.publicUrl;
-        }
-        
-        progressFill.style.width = '80%';
-        progressText.textContent = '80%';
-        
-        // Сохранение в БД
-        await supabase.from('tracks').insert({
-            title,
-            artist,
-            artist_id: currentUser.id,
-            audio_url: audioUrl,
-            cover_url: coverUrl,
-            plays: 0
-        });
-        
-        progressFill.style.width = '100%';
-        progressText.textContent = '100%';
-        
-        setTimeout(() => {
-            alert('Трек успешно загружен!');
-            document.getElementById('upload-form').reset();
-            progressDiv.style.display = 'none';
-            progressFill.style.width = '0%';
-            progressText.textContent = '0%';
-            document.querySelector('[data-page="home"]').click();
-            loadTracks();
-        }, 500);
-        
-    } catch (error) {
-        alert('Ошибка загрузки: ' + error.message);
-        progressDiv.style.display = 'none';
-    }
-});
+init();
 </script>
 </body>
-  </html>
+            </html>
