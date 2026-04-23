@@ -16,10 +16,11 @@
         .input-group i { color: #888; margin-right: 12px; }
         .input-group input { background: transparent; border: none; padding: 16px 0; color: #fff; font-size: 16px; width: 100%; outline: none; }
         .auth-btn { background: #1db954; color: #000; font-weight: 700; font-size: 16px; padding: 16px; border: none; border-radius: 30px; cursor: pointer; width: 100%; margin-top: 10px; transition: 0.2s; }
-        .auth-btn:hover { background: #1ed760; }
+        .auth-btn:disabled { opacity: 0.5; }
         .auth-error { color: #ff4d4d; font-size: 14px; text-align: center; margin-top: 10px; min-height: 20px; }
         .auth-link { text-align: center; margin-top: 20px; color: #888; }
         .auth-link a { color: #1db954; text-decoration: none; font-weight: 600; }
+        .debug-box { margin-top: 20px; padding: 15px; background: #0a0a0a; border-radius: 8px; font-size: 12px; color: #00ff00; font-family: monospace; max-height: 200px; overflow-y: auto; }
     </style>
 </head>
 <body>
@@ -28,36 +29,67 @@
         <i class="fab fa-spotify"></i>
         <span>Spoofy</span>
     </div>
-    <h2>Создать аккаунт</h2>
+    <h2>Регистрация</h2>
     <form id="register-form">
         <div class="input-group">
             <i class="fas fa-user"></i>
-            <input type="text" id="name" placeholder="Имя" required autocomplete="name">
+            <input type="text" id="name" placeholder="Имя" required>
         </div>
         <div class="input-group">
             <i class="fas fa-envelope"></i>
-            <input type="email" id="email" placeholder="Email" required autocomplete="email">
+            <input type="email" id="email" placeholder="Email" required>
         </div>
         <div class="input-group">
             <i class="fas fa-lock"></i>
-            <input type="password" id="password" placeholder="Пароль (мин. 6 символов)" required minlength="6" autocomplete="new-password">
+            <input type="password" id="password" placeholder="Пароль (мин. 6)" required minlength="6">
         </div>
-        <button type="submit" class="auth-btn">Зарегистрироваться</button>
+        <button type="submit" class="auth-btn" id="submit-btn">Зарегистрироваться</button>
         <div class="auth-error" id="error"></div>
     </form>
     <p class="auth-link">Уже есть аккаунт? <a href="login.html">Войти</a></p>
+    
+    <!-- ОТЛАДОЧНЫЙ БЛОК -->
+    <div class="debug-box" id="debug">
+        Ожидание действий...
+    </div>
 </div>
+
 <script>
 const SUPABASE_URL = 'https://axocsccfyyrtcegxvwal.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_Jga_s88V7TAEUSvHIFkMvA_DT5vG44E';
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-// Проверка: если уже авторизован - на главную
-supabase.auth.getSession().then(({ data: { session } }) => {
-    if (session) window.location.href = 'main.html';
+const debugEl = document.getElementById('debug');
+
+function log(msg) {
+    debugEl.innerHTML += '<br>> ' + msg;
+    console.log(msg);
+}
+
+log('Страница загружена');
+log('URL: ' + SUPABASE_URL);
+log('Ключ: ' + SUPABASE_ANON_KEY.substring(0, 20) + '...');
+
+// Проверяем, загрузился ли Supabase
+if (typeof window.supabase === 'undefined') {
+    log('❌ ОШИБКА: Supabase не загружен!');
+} else {
+    log('✅ Supabase загружен');
+}
+
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+log('Клиент создан');
+
+// Проверка соединения
+supabase.auth.getSession().then(({ data, error }) => {
+    if (error) {
+        log('❌ Ошибка соединения: ' + error.message);
+    } else {
+        log('✅ Соединение с Supabase работает');
+        log('Сессия: ' + (data.session ? 'есть' : 'нет'));
+    }
 });
 
-// Обработка регистрации
+// Обработка формы
 document.getElementById('register-form').addEventListener('submit', async (e) => {
     e.preventDefault();
     
@@ -65,16 +97,30 @@ document.getElementById('register-form').addEventListener('submit', async (e) =>
     const email = document.getElementById('email').value.trim();
     const password = document.getElementById('password').value;
     const errorEl = document.getElementById('error');
+    const btn = document.getElementById('submit-btn');
+    
+    log('🚀 Нажата кнопка регистрации');
+    log('Имя: ' + name);
+    log('Email: ' + email);
+    log('Пароль: ' + '*'.repeat(password.length));
     
     if (!name || !email || !password) {
         errorEl.textContent = 'Заполните все поля';
+        log('❌ Не все поля заполнены');
         return;
     }
     
     if (password.length < 6) {
         errorEl.textContent = 'Пароль должен быть не менее 6 символов';
+        log('❌ Пароль слишком короткий');
         return;
     }
+    
+    btn.disabled = true;
+    btn.textContent = 'Отправка...';
+    errorEl.textContent = '';
+    
+    log('📤 Отправка запроса к Supabase...');
     
     try {
         const { data, error } = await supabase.auth.signUp({
@@ -88,17 +134,30 @@ document.getElementById('register-form').addEventListener('submit', async (e) =>
             }
         });
         
-        if (error) throw error;
+        log('📥 Получен ответ');
+        log('data.user: ' + (data.user ? data.user.email : 'нет'));
+        log('data.session: ' + (data.session ? 'есть' : 'нет'));
+        
+        if (error) {
+            log('❌ Ошибка: ' + error.message);
+            throw error;
+        }
         
         if (data.session) {
-            // Автоматический вход
+            log('✅ Успех! Перенаправляю на main.html...');
             window.location.href = 'main.html';
         } else {
-            alert('Регистрация успешна! Теперь войдите.');
+            log('⚠️ Сессии нет. Возможно, нужно подтвердить email.');
+            alert('Регистрация успешна! Проверьте почту или войдите.');
             window.location.href = 'login.html';
         }
+        
     } catch (er) {
+        log('❌ Исключение: ' + er.message);
         errorEl.textContent = er.message;
+    } finally {
+        btn.disabled = false;
+        btn.textContent = 'Зарегистрироваться';
     }
 });
 </script>
