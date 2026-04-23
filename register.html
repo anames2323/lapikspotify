@@ -1,128 +1,46 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Spoofy • Регистрация</title>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YouClone • Регистрация</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: sans-serif; }
-        body { background: #0a0a0a; display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 20px; }
-        .card { background: #181818; padding: 30px; border-radius: 16px; width: 100%; max-width: 380px; }
-        .logo { color: #1db954; font-size: 32px; font-weight: bold; text-align: center; margin-bottom: 30px; }
-        .logo i { margin-right: 10px; }
-        h2 { color: #fff; text-align: center; margin-bottom: 25px; }
-        .input-box { background: #1e1e1e; border-radius: 8px; padding: 5px 15px; display: flex; align-items: center; margin-bottom: 15px; }
-        .input-box i { color: #888; margin-right: 12px; }
-        .input-box input { background: none; border: none; padding: 16px 0; color: #fff; font-size: 16px; width: 100%; outline: none; }
-        .btn { background: #1db954; color: #000; font-weight: bold; font-size: 16px; padding: 16px; border: none; border-radius: 30px; width: 100%; cursor: pointer; margin-top: 10px; }
-        .btn:active { background: #1ed760; }
-        .error { color: #ff4d4d; font-size: 14px; text-align: center; margin-top: 10px; }
-        .link { text-align: center; margin-top: 20px; color: #888; }
-        .link a { color: #1db954; text-decoration: none; }
-        .debug { margin-top: 20px; padding: 15px; background: #0a0a0a; border-radius: 8px; color: #00ff00; font-size: 11px; word-break: break-all; max-height: 200px; overflow-y: auto; }
+        *{margin:0;padding:0;box-sizing:border-box;font-family:Roboto,Arial,sans-serif}
+        body{display:flex;align-items:center;justify-content:center;min-height:100vh;background:#0f0f0f;padding:20px}
+        .card{background:#1a1a1a;padding:40px 30px;border-radius:12px;width:100%;max-width:380px}
+        .logo{display:flex;align-items:center;justify-content:center;gap:8px;font-size:28px;font-weight:700;margin-bottom:30px;color:#f00}
+        .logo i{font-size:32px}h2{text-align:center;margin-bottom:25px;color:#fff}
+        .input-group{background:#272727;border-radius:8px;padding:0 15px;display:flex;align-items:center;margin-bottom:15px;border:1px solid #3e3e3e}
+        .input-group i{color:#aaa;margin-right:12px}.input-group input{background:transparent;border:none;padding:16px 0;color:#fff;font-size:16px;width:100%;outline:none}
+        .btn{background:#f00;color:#fff;font-weight:700;padding:14px;border:none;border-radius:30px;width:100%;cursor:pointer;margin-top:10px}
+        .error{color:#f00;font-size:14px;text-align:center;margin-top:10px}
+        .link{text-align:center;margin-top:20px;color:#aaa}.link a{color:#f00;text-decoration:none}
     </style>
 </head>
 <body>
 <div class="card">
-    <div class="logo">
-        <i class="fab fa-spotify"></i> Spoofy
-    </div>
+    <div class="logo"><i class="fab fa-youtube"></i> YouClone</div>
     <h2>Регистрация</h2>
-    
-    <div class="input-box">
-        <i class="fas fa-user"></i>
-        <input type="text" id="name" placeholder="Имя" value="Арсений">
-    </div>
-    <div class="input-box">
-        <i class="fas fa-envelope"></i>
-        <input type="email" id="email" placeholder="Email" value="radmirnoros@gmail.com">
-    </div>
-    <div class="input-box">
-        <i class="fas fa-lock"></i>
-        <input type="password" id="password" placeholder="Пароль (мин. 6)" value="123456">
-    </div>
-    
-    <button class="btn" id="regBtn">Зарегистрироваться</button>
-    
-    <div class="error" id="error"></div>
-    <div class="link">
-        Уже есть аккаунт? <a href="login.html">Войти</a>
-    </div>
-    <div class="debug" id="debug">Нажми кнопку...</div>
+    <form id="regForm">
+        <div class="input-group"><i class="fas fa-user"></i><input type="text" id="name" placeholder="Имя" required></div>
+        <div class="input-group"><i class="fas fa-envelope"></i><input type="email" id="email" placeholder="Email" required></div>
+        <div class="input-group"><i class="fas fa-lock"></i><input type="password" id="password" placeholder="Пароль (мин. 6)" required minlength="6"></div>
+        <button type="submit" class="btn">Зарегистрироваться</button>
+        <div class="error" id="error"></div>
+    </form>
+    <p class="link">Уже есть аккаунт? <a href="login.html">Войти</a></p>
 </div>
-
 <script>
-const SUPABASE_URL = 'https://axocsccfyyrtcegxvwal.supabase.co';
-const SUPABASE_ANON_KEY = 'sb_publishable_Jga_s88V7TAEUSvHIFkMvA_DT5vG44E';
-
-const debugEl = document.getElementById('debug');
-function log(msg) {
-    debugEl.innerHTML = msg;
-    console.log(msg);
-}
-
-document.getElementById('regBtn').addEventListener('click', async function() {
-    const name = document.getElementById('name').value.trim();
-    const email = document.getElementById('email').value.trim();
-    const password = document.getElementById('password').value;
-    const errorEl = document.getElementById('error');
-    const btn = this;
-    
-    if (!name || !email || !password) {
-        errorEl.textContent = 'Заполните все поля';
-        return;
-    }
-    
-    btn.textContent = 'Отправка...';
-    btn.style.opacity = '0.5';
-    errorEl.textContent = '';
-    
-    log('Отправка запроса к: ' + SUPABASE_URL + '/auth/v1/signup');
-    
-    try {
-        const response = await fetch(SUPABASE_URL + '/auth/v1/signup', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'apikey': SUPABASE_ANON_KEY
-            },
-            body: JSON.stringify({
-                email: email,
-                password: password,
-                data: {
-                    name: name
-                }
-            })
-        });
-        
-        const text = await response.text();
-        let data;
-        try {
-            data = JSON.parse(text);
-        } catch {
-            data = { raw: text };
-        }
-        
-        log('Статус: ' + response.status + '\nОтвет: ' + JSON.stringify(data, null, 2));
-        
-        if (!response.ok) {
-            const msg = data.msg || data.message || data.error || 'Ошибка';
-            throw new Error(msg);
-        }
-        
-        if (data.id || data.user) {
-            log('✅ УСПЕХ!');
-            alert('Регистрация успешна!');
-            window.location.href = 'login.html';
-        }
-        
-    } catch (err) {
-        log('❌ ОШИБКА: ' + err.message);
-        errorEl.textContent = err.message;
-        btn.textContent = 'Зарегистрироваться';
-        btn.style.opacity = '1';
-    }
+const SUPABASE_URL='https://axocsccfyyrtcegxvwal.supabase.co';
+const SUPABASE_ANON_KEY='sb_publishable_Jga_s88V7TAEUSvHIFkMvA_DT5vG44E';
+const supabase=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
+supabase.auth.getSession().then(({data:{session}})=>{if(session)window.location.href='main.html'});
+document.getElementById('regForm').addEventListener('submit',async e=>{
+    e.preventDefault();const name=document.getElementById('name').value.trim(),email=document.getElementById('email').value.trim(),password=document.getElementById('password').value;
+    const err=document.getElementById('error');if(!name||!email||!password){err.textContent='Заполните все поля';return}if(password.length<6){err.textContent='Пароль не менее 6 символов';return}
+    try{const{error}=await supabase.auth.signUp({email,password,options:{data:{name,avatar_url:'https://i.pravatar.cc/150?u='+email}}});if(error)throw error;alert('Регистрация успешна! Теперь войдите.');window.location.href='login.html'}
+    catch(er){err.textContent=er.message}
 });
 </script>
 </body>
