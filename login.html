@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <title>Spoofy • Вход</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body class="auth-body">
+    <div class="auth-container">
+        <div class="auth-logo">
+            <i class="fab fa-spotify"></i>
+            <span>Spoofy</span>
+        </div>
+        
+        <h2 class="auth-title">Вход в аккаунт</h2>
+        
+        <form id="login-form" class="auth-form">
+            <div class="input-group">
+                <i class="fas fa-envelope"></i>
+                <input type="email" id="email" placeholder="Email" required autocomplete="email">
+            </div>
+            <div class="input-group">
+                <i class="fas fa-lock"></i>
+                <input type="password" id="password" placeholder="Пароль" required autocomplete="current-password">
+            </div>
+            <button type="submit" class="auth-btn">
+                <span class="btn-text">Войти</span>
+                <span class="btn-loader" style="display:none;"><i class="fas fa-spinner fa-spin"></i></span>
+            </button>
+            <div class="auth-error" id="error-message"></div>
+        </form>
+        
+        <p class="auth-link">
+            Нет аккаунта? <a href="register.html">Зарегистрироваться</a>
+        </p>
+    </div>
+    
+    <script src="script.js"></script>
+    <script>
+        // Проверяем, не авторизован ли уже пользователь
+        const supabase = window.supabase.createClient(
+            'https://axocscfyyrtcegxvwal.supabase.co',
+            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF4b2NzY2Z5eXJ0Y2VneHZ3YWwiLCJyb2xlIjoiYW5vbiIsImlhdCI6MTc0NTQ0MjE2MSwiZXhwIjoyMDYxMDE4MTYxfQ.LhT5jBx2RjGpGZqP9ZBjY8Z3lBmWk1iA2zFkV8ZQf1s'
+        );
+        
+        async function checkAuth() {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session) {
+                window.location.href = 'index.html';
+            }
+        }
+        checkAuth();
+        
+        document.getElementById('login-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
+            const errorEl = document.getElementById('error-message');
+            const btnText = document.querySelector('.btn-text');
+            const btnLoader = document.querySelector('.btn-loader');
+            
+            if (!email || !password) {
+                errorEl.textContent = 'Заполните все поля';
+                return;
+            }
+            
+            btnText.style.display = 'none';
+            btnLoader.style.display = 'inline';
+            errorEl.textContent = '';
+            
+            try {
+                const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+                if (error) throw error;
+                
+                localStorage.setItem('supabase_session', JSON.stringify(data.session));
+                window.location.href = 'index.html';
+            } catch (error) {
+                errorEl.textContent = 'Неверный email или пароль';
+            } finally {
+                btnText.style.display = 'inline';
+                btnLoader.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>
