@@ -20,7 +20,6 @@
         .auth-error { color: #ff4d4d; font-size: 14px; text-align: center; margin-top: 10px; min-height: 20px; }
         .auth-link { text-align: center; margin-top: 20px; color: #888; }
         .auth-link a { color: #1db954; text-decoration: none; font-weight: 600; }
-        .debug-box { margin-top: 20px; padding: 15px; background: #0a0a0a; border-radius: 8px; font-size: 12px; color: #00ff00; font-family: monospace; max-height: 150px; overflow-y: auto; }
     </style>
 </head>
 <body>
@@ -48,52 +47,49 @@
     
     <div class="auth-error" id="error"></div>
     <p class="auth-link">Уже есть аккаунт? <a href="login.html">Войти</a></p>
-    <div class="debug-box" id="debug">Нажми кнопку...</div>
 </div>
 
 <script>
+// ПРАВИЛЬНЫЕ КЛЮЧИ
 const SUPABASE_URL = 'https://axocsccfyyrtcegxvwal.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_Jga_s88V7TAEUSvHIFkMvA_DT5vG44E';
 
-const debugEl = document.getElementById('debug');
-function log(msg) { 
-    debugEl.innerHTML = msg; 
-    console.log(msg); 
-}
+// ПРАВИЛЬНОЕ создание клиента
+const { createClient } = window.supabase;
+const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+    auth: {
+        autoRefreshToken: true,
+        persistSession: true,
+        detectSessionInUrl: true
+    }
+});
 
-log('✅ Страница загружена');
+// Проверка: если уже авторизован - на главную
+supabase.auth.getSession().then(({ data: { session } }) => {
+    if (session) window.location.href = 'main.html';
+});
 
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-// Глобальная функция для кнопки
+// Функция регистрации
 window.doRegister = async function() {
-    log('🚀 Кнопка нажата!');
-    
     const name = document.getElementById('name').value.trim();
     const email = document.getElementById('email').value.trim();
     const password = document.getElementById('password').value;
     const errorEl = document.getElementById('error');
     const btn = document.getElementById('submit-btn');
     
-    log('Имя: ' + name + ', Email: ' + email);
-    
     if (!name || !email || !password) {
         errorEl.textContent = 'Заполните все поля';
-        log('❌ Не все поля заполнены');
         return;
     }
     
     if (password.length < 6) {
         errorEl.textContent = 'Пароль должен быть не менее 6 символов';
-        log('❌ Пароль короткий');
         return;
     }
     
     btn.disabled = true;
     btn.textContent = 'Отправка...';
     errorEl.textContent = '';
-    
-    log('📤 Отправляю запрос...');
     
     try {
         const { data, error } = await supabase.auth.signUp({
@@ -107,24 +103,17 @@ window.doRegister = async function() {
             }
         });
         
-        if (error) {
-            log('❌ Ошибка Supabase: ' + error.message);
-            throw error;
-        }
-        
-        log('✅ Успех! user: ' + (data.user ? data.user.email : 'нет'));
+        if (error) throw error;
         
         if (data.session) {
-            log('🎉 Есть сессия, перехожу...');
+            // Автоматический вход
             window.location.href = 'main.html';
         } else {
-            log('⚠️ Нет сессии');
             alert('Регистрация успешна! Теперь войдите.');
             window.location.href = 'login.html';
         }
         
     } catch (err) {
-        log('❌ Ошибка: ' + err.message);
         errorEl.textContent = err.message;
         btn.disabled = false;
         btn.textContent = 'Зарегистрироваться';
