@@ -40,6 +40,9 @@
         <p class="auth-link">
             Уже есть аккаунт? <a href="login.html">Войти</a>
         </p>
+        <p class="auth-link">
+            <a href="index.html">На главную</a>
+        </p>
     </div>
     
     <script>
@@ -94,8 +97,13 @@
                 
                 if (error) throw error;
                 
+                console.log('Регистрация:', data);
+                
                 if (data.session) {
-                    window.location.href = 'index.html';
+                    // Автоматический вход
+                    setTimeout(() => {
+                        window.location.href = 'index.html';
+                    }, 500);
                 } else {
                     alert('Регистрация успешна! Теперь войдите.');
                     window.location.href = 'login.html';
