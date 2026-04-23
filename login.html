@@ -14,7 +14,8 @@
         .input-group{background:#272727;border-radius:8px;padding:0 15px;display:flex;align-items:center;margin-bottom:15px;border:1px solid #3e3e3e}
         .input-group i{color:#aaa;margin-right:12px}.input-group input{background:transparent;border:none;padding:16px 0;color:#fff;font-size:16px;width:100%;outline:none}
         .btn{background:#f00;color:#fff;font-weight:700;padding:14px;border:none;border-radius:30px;width:100%;cursor:pointer;margin-top:10px}
-        .error{color:#f00;font-size:14px;text-align:center;margin-top:10px}
+        .btn:disabled{opacity:0.5}
+        .error{color:#f00;font-size:14px;text-align:center;margin-top:10px;min-height:20px}
         .link{text-align:center;margin-top:20px;color:#aaa}.link a{color:#f00;text-decoration:none}
     </style>
 </head>
@@ -25,7 +26,7 @@
     <form id="loginForm">
         <div class="input-group"><i class="fas fa-envelope"></i><input type="email" id="email" placeholder="Email" required></div>
         <div class="input-group"><i class="fas fa-lock"></i><input type="password" id="password" placeholder="Пароль" required></div>
-        <button type="submit" class="btn">Войти</button>
+        <button type="submit" class="btn" id="loginBtn">Войти</button>
         <div class="error" id="error"></div>
     </form>
     <p class="link">Нет аккаунта? <a href="register.html">Зарегистрироваться</a></p>
@@ -34,12 +35,40 @@
 const SUPABASE_URL='https://axocsccfyyrtcegxvwal.supabase.co';
 const SUPABASE_ANON_KEY='sb_publishable_Jga_s88V7TAEUSvHIFkMvA_DT5vG44E';
 const supabase=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
-supabase.auth.getSession().then(({data:{session}})=>{if(session)window.location.href='main.html'});
+
+// Проверяем, есть ли уже токен
+const saved=localStorage.getItem('supabase_token');
+if(saved){window.location.href='main.html'}
+
 document.getElementById('loginForm').addEventListener('submit',async e=>{
-    e.preventDefault();const email=document.getElementById('email').value.trim(),password=document.getElementById('password').value;
-    const err=document.getElementById('error');if(!email||!password){err.textContent='Заполните все поля';return}
-    try{const{error}=await supabase.auth.signInWithPassword({email,password});if(error)throw error;window.location.href='main.html'}
-    catch(er){err.textContent='Неверный email или пароль'}
+    e.preventDefault();
+    const email=document.getElementById('email').value.trim();
+    const password=document.getElementById('password').value;
+    const err=document.getElementById('error');
+    const btn=document.getElementById('loginBtn');
+    
+    if(!email||!password){err.textContent='Заполните все поля';return}
+    
+    btn.disabled=true;
+    btn.textContent='Вход...';
+    err.textContent='';
+    
+    try{
+        const{data,error}=await supabase.auth.signInWithPassword({email,password});
+        if(error)throw error;
+        
+        // СОХРАНЯЕМ ТОКЕН
+        if(data.session){
+            localStorage.setItem('supabase_token',data.session.access_token);
+            localStorage.setItem('supabase_user',JSON.stringify(data.user));
+        }
+        
+        window.location.href='main.html';
+    }catch(er){
+        err.textContent='Неверный email или пароль';
+        btn.disabled=false;
+        btn.textContent='Войти';
+    }
 });
 </script>
 </body>
