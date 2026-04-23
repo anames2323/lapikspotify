@@ -16,18 +16,15 @@
         .nav-item i{font-size:20px;width:24px}
         .nav-item:hover{color:#fff}
         .nav-item.active{color:#fff;background:#1f1f1f}
-        .playlists{margin-top:24px}
-        .playlists-header{display:flex;justify-content:space-between;padding:0 16px 12px;color:#b3b3b3;font-size:14px}
-        .playlist-item{display:flex;align-items:center;gap:12px;padding:8px 16px;color:#b3b3b3;cursor:pointer}
-        .playlist-item:hover{color:#fff}
         .main{background:#121212;overflow-y:auto}
         .main-content{padding:0 32px 32px}
-        .top-bar{display:flex;justify-content:flex-end;padding:16px 32px;position:sticky;top:0;background:#121212}
+        .top-bar{display:flex;justify-content:flex-end;padding:16px 32px;position:sticky;top:0;background:#121212;z-index:10}
         .user-btn{display:flex;align-items:center;gap:8px;background:rgba(0,0,0,0.7);border:none;color:#fff;padding:4px 12px 4px 4px;border-radius:30px;cursor:pointer}
         .user-btn img{width:28px;height:28px;border-radius:50%}
-        .dropdown{position:absolute;right:32px;top:65px;background:#282828;border-radius:4px;padding:4px;display:none}
+        .dropdown{position:absolute;right:32px;top:65px;background:#282828;border-radius:4px;padding:4px;display:none;min-width:200px}
         .dropdown.show{display:block}
         .dropdown a{display:flex;align-items:center;gap:12px;padding:12px;color:#b3b3b3;text-decoration:none}
+        .dropdown a:hover{background:#3e3e3e;color:#fff}
         .page{display:none;padding-top:20px}
         .page.active{display:block}
         .cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:20px}
@@ -49,21 +46,24 @@
         .player-buttons{display:flex;gap:16px;margin-bottom:8px}
         .player-buttons button{background:none;border:none;color:#b3b3b3;font-size:16px;cursor:pointer}
         .play-btn{background:#fff!important;color:#000!important;width:32px;height:32px;border-radius:50%!important}
-        .progress-bar{display:flex;align-items:center;gap:8px;width:100%}
-        .progress-slider{flex:1;height:4px;background:#535353;border-radius:2px;cursor:pointer}
-        .progress-fill{width:0%;height:100%;background:#fff;border-radius:2px}
+        .progress-container{display:flex;align-items:center;gap:8px;width:100%}
+        .progress-slider{flex:1;height:4px;background:#535353;border-radius:2px;cursor:pointer;position:relative}
+        .progress-fill{position:absolute;left:0;top:0;width:0%;height:100%;background:#fff;border-radius:2px}
+        .progress-slider:hover .progress-fill{background:#1db954}
         .volume-control{display:flex;align-items:center;gap:8px;width:25%;justify-content:flex-end}
-        .volume-slider{width:100px;height:4px;background:#535353;border-radius:2px;cursor:pointer}
-        .volume-fill{width:70%;height:100%;background:#fff;border-radius:2px}
+        .volume-slider{width:100px;height:4px;background:#535353;border-radius:2px;cursor:pointer;position:relative}
+        .volume-fill{position:absolute;left:0;top:0;width:70%;height:100%;background:#fff;border-radius:2px}
         .empty-state{text-align:center;padding:60px;color:#b3b3b3}
         #loading{display:flex;align-items:center;justify-content:center;height:100vh}
         .spinner{width:40px;height:40px;border:3px solid #282828;border-top-color:#1db954;border-radius:50%;animation:spin 1s linear infinite;margin-right:16px}
         @keyframes spin{to{transform:rotate(360deg)}}
-        #uploadModal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);align-items:center;justify-content:center}
+        .modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);align-items:center;justify-content:center;z-index:100}
         .modal-content{background:#282828;padding:30px;border-radius:8px;width:90%;max-width:500px}
         .modal-content input{width:100%;padding:12px;margin-bottom:12px;background:#1e1e1e;border:1px solid #3e3e3e;color:#fff;border-radius:4px}
+        .modal-buttons{display:flex;gap:12px;margin-top:20px}
         .btn-primary{flex:1;padding:14px;background:#1db954;border:none;border-radius:30px;font-weight:bold;cursor:pointer}
         .btn-secondary{flex:1;padding:14px;background:transparent;border:1px solid #535353;color:#fff;border-radius:30px;cursor:pointer}
+        .time-display{font-size:12px;color:#b3b3b3;min-width:40px}
     </style>
 </head>
 <body>
@@ -85,6 +85,7 @@
                     <i class="fas fa-chevron-down"></i>
                 </button>
                 <div class="dropdown" id="userDropdown">
+                    <a href="#" id="editProfileBtn"><i class="fas fa-user-edit"></i> Редактировать профиль</a>
                     <a href="#" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Выйти</a>
                 </div>
             </div>
@@ -96,7 +97,7 @@
             </div>
             <div id="library-page" class="page">
                 <h1 style="margin:20px 0">Моя медиатека</h1>
-                <button class="user-btn" id="uploadBtn"><i class="fas fa-plus"></i> Загрузить</button>
+                <button class="user-btn" id="uploadBtn"><i class="fas fa-plus"></i> Загрузить трек</button>
                 <div id="myTracksList" style="margin-top:20px"></div>
             </div>
         </div>
@@ -110,10 +111,10 @@
             <div class="player-buttons">
                 <button class="play-btn" id="playBtn"><i class="fas fa-play"></i></button>
             </div>
-            <div class="progress-bar">
-                <span id="currentTime">0:00</span>
+            <div class="progress-container">
+                <span class="time-display" id="currentTime">0:00</span>
                 <div class="progress-slider" id="progressSlider"><div class="progress-fill" id="progressFill"></div></div>
-                <span id="duration">0:00</span>
+                <span class="time-display" id="duration">0:00</span>
             </div>
         </div>
         <div class="volume-control">
@@ -122,20 +123,38 @@
         </div>
     </div>
 </div>
-<div id="uploadModal">
+
+<!-- Модальное окно загрузки трека -->
+<div class="modal" id="uploadModal">
     <div class="modal-content">
-        <h2>Загрузить трек</h2>
-        <input id="uploadTitle" placeholder="Название">
-        <input id="uploadArtist" placeholder="Исполнитель">
+        <h2 style="margin-bottom:20px">Загрузить трек</h2>
+        <input id="uploadTitle" placeholder="Название трека">
+        <label style="color:#b3b3b3;margin:16px 0 8px;display:block">Аудио файл</label>
         <input type="file" id="uploadAudio" accept="audio/*">
+        <label style="color:#b3b3b3;margin:16px 0 8px;display:block">Обложка</label>
         <input type="file" id="uploadCover" accept="image/*">
-        <div id="uploadProgress"></div>
-        <div style="display:flex;gap:12px">
+        <div id="uploadProgress" style="margin:16px 0"></div>
+        <div class="modal-buttons">
             <button class="btn-primary" id="confirmUpload">Загрузить</button>
             <button class="btn-secondary" id="cancelUpload">Отмена</button>
         </div>
     </div>
 </div>
+
+<!-- Модальное окно редактирования профиля -->
+<div class="modal" id="editProfileModal">
+    <div class="modal-content">
+        <h2 style="margin-bottom:20px">Редактировать профиль</h2>
+        <input id="editName" placeholder="Имя">
+        <input id="editAvatar" placeholder="URL аватара (необязательно)">
+        <div id="editProfileProgress" style="margin:16px 0"></div>
+        <div class="modal-buttons">
+            <button class="btn-primary" id="confirmEditProfile">Сохранить</button>
+            <button class="btn-secondary" id="cancelEditProfile">Отмена</button>
+        </div>
+    </div>
+</div>
+
 <script>
 const SUPABASE_URL='https://axocsccfyyrtcegxvwal.supabase.co';
 const SUPABASE_ANON_KEY='sb_publishable_Jga_s88V7TAEUSvHIFkMvA_DT5vG44E';
@@ -147,10 +166,16 @@ async function init(){
     accessToken=t;currentUser=JSON.parse(u);
     document.getElementById('loading').style.display='none';
     document.getElementById('app').style.display='grid';
-    document.getElementById('userName').textContent=currentUser.user_metadata?.name||currentUser.email?.split('@')[0]||'User';
-    document.getElementById('userAvatar').src=currentUser.user_metadata?.avatar_url||'https://i.pravatar.cc/40?img=7';
+    updateUserUI();
     await loadTracks();
     setupEvents();
+}
+
+function updateUserUI(){
+    const name=currentUser.user_metadata?.name||currentUser.email?.split('@')[0]||'User';
+    const avatar=currentUser.user_metadata?.avatar_url||'https://i.pravatar.cc/40?img=7';
+    document.getElementById('userName').textContent=name;
+    document.getElementById('userAvatar').src=avatar;
 }
 
 async function loadTracks(){
@@ -200,30 +225,91 @@ function setupEvents(){
     document.addEventListener('click',()=>document.getElementById('userDropdown').classList.remove('show'));
     document.getElementById('logoutBtn').addEventListener('click',e=>{e.preventDefault();localStorage.clear();window.location.href='login.html'});
     document.getElementById('playBtn').addEventListener('click',()=>{if(!audio.src)return;isPlaying?(audio.pause(),document.getElementById('playBtn').innerHTML='<i class="fas fa-play"></i>'):(audio.play(),document.getElementById('playBtn').innerHTML='<i class="fas fa-pause"></i>');isPlaying=!isPlaying});
-    audio.addEventListener('timeupdate',()=>{const p=(audio.currentTime/audio.duration)*100||0;document.getElementById('progressFill').style.width=p+'%';document.getElementById('currentTime').textContent=formatTime(audio.currentTime)});
-    audio.addEventListener('loadedmetadata',()=>document.getElementById('duration').textContent=formatTime(audio.duration));
-    audio.addEventListener('ended',()=>{document.getElementById('playBtn').innerHTML='<i class="fas fa-play"></i>';isPlaying=!1});
-    document.getElementById('progressSlider').addEventListener('click',e=>{const r=e.currentTarget.getBoundingClientRect();audio.currentTime=((e.clientX-r.left)/r.width)*audio.duration});
-    document.getElementById('volumeSlider').addEventListener('click',e=>{const r=e.currentTarget.getBoundingClientRect();audio.volume=Math.max(0,Math.min(1,(e.clientX-r.left)/r.width));document.getElementById('volumeFill').style.width=(audio.volume*100)+'%'});
     
-    const modal=document.getElementById('uploadModal');
-    document.getElementById('uploadBtn').addEventListener('click',()=>modal.style.display='flex');
-    document.getElementById('cancelUpload').addEventListener('click',()=>{modal.style.display='none';document.getElementById('uploadTitle').value='';document.getElementById('uploadArtist').value='';document.getElementById('uploadAudio').value='';document.getElementById('uploadCover').value=''});
+    audio.addEventListener('timeupdate',()=>{
+        const p=(audio.currentTime/audio.duration)*100||0;
+        document.getElementById('progressFill').style.width=p+'%';
+        document.getElementById('currentTime').textContent=formatTime(audio.currentTime);
+    });
+    audio.addEventListener('loadedmetadata',()=>document.getElementById('duration').textContent=formatTime(audio.duration));
+    audio.addEventListener('ended',()=>{document.getElementById('playBtn').innerHTML='<i class="fas fa-play"></i>';isPlaying=!1;document.getElementById('progressFill').style.width='0%';document.getElementById('currentTime').textContent='0:00'});
+    
+    document.getElementById('progressSlider').addEventListener('click',e=>{
+        const r=e.currentTarget.getBoundingClientRect();
+        const p=(e.clientX-r.left)/r.width;
+        audio.currentTime=p*audio.duration;
+    });
+    
+    document.getElementById('volumeSlider').addEventListener('click',e=>{
+        const r=e.currentTarget.getBoundingClientRect();
+        const p=Math.max(0,Math.min(1,(e.clientX-r.left)/r.width));
+        audio.volume=p;
+        document.getElementById('volumeFill').style.width=(p*100)+'%';
+    });
+    
+    // Загрузка трека
+    const uploadModal=document.getElementById('uploadModal');
+    document.getElementById('uploadBtn').addEventListener('click',()=>uploadModal.style.display='flex');
+    document.getElementById('cancelUpload').addEventListener('click',()=>{uploadModal.style.display='none';clearUploadForm()});
     document.getElementById('confirmUpload').addEventListener('click',async()=>{
-        const t=document.getElementById('uploadTitle').value,a=document.getElementById('uploadArtist').value,af=document.getElementById('uploadAudio').files[0],cf=document.getElementById('uploadCover').files[0],p=document.getElementById('uploadProgress');
-        if(!t||!a||!af){p.innerHTML='<span style="color:#ff4d4d">Заполните все поля</span>';return}
+        const title=document.getElementById('uploadTitle').value;
+        const af=document.getElementById('uploadAudio').files[0];
+        const cf=document.getElementById('uploadCover').files[0];
+        const p=document.getElementById('uploadProgress');
+        if(!title||!af){p.innerHTML='<span style="color:#ff4d4d">Введите название и выберите файл</span>';return}
         p.innerHTML='Загрузка...';
         try{
+            const artist=currentUser.user_metadata?.name||currentUser.email?.split('@')[0]||'User';
             const fd=new FormData();fd.append('file',af);
-            await fetch(SUPABASE_URL+'/storage/v1/object/music/'+currentUser.id+'/'+Date.now()+'_'+af.name,{method:'POST',headers:{'Authorization':'Bearer '+accessToken,'apikey':SUPABASE_ANON_KEY},body:fd});
-            const aUrl=SUPABASE_URL+'/storage/v1/object/public/music/'+currentUser.id+'/'+Date.now()+'_'+af.name;
+            const fn=Date.now()+'_'+af.name.replace(/[^a-zA-Z0-9.]/g,'_');
+            await fetch(SUPABASE_URL+'/storage/v1/object/music/'+currentUser.id+'/'+fn,{method:'POST',headers:{'Authorization':'Bearer '+accessToken,'apikey':SUPABASE_ANON_KEY},body:fd});
+            const aUrl=SUPABASE_URL+'/storage/v1/object/public/music/'+currentUser.id+'/'+fn;
             let cUrl=null;
-            if(cf){const cfData=new FormData();cfData.append('file',cf);await fetch(SUPABASE_URL+'/storage/v1/object/music/'+currentUser.id+'/covers/'+Date.now()+'_'+cf.name,{method:'POST',headers:{'Authorization':'Bearer '+accessToken,'apikey':SUPABASE_ANON_KEY},body:cfData});cUrl=SUPABASE_URL+'/storage/v1/object/public/music/'+currentUser.id+'/covers/'+Date.now()+'_'+cf.name}
-            await fetch(SUPABASE_URL+'/rest/v1/tracks',{method:'POST',headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken,'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify({title:t,artist:a,artist_id:currentUser.id,audio_url:aUrl,cover_url:cUrl,plays:0})});
+            if(cf){
+                const cfData=new FormData();cfData.append('file',cf);
+                const cfn=Date.now()+'_'+cf.name.replace(/[^a-zA-Z0-9.]/g,'_');
+                await fetch(SUPABASE_URL+'/storage/v1/object/music/'+currentUser.id+'/covers/'+cfn,{method:'POST',headers:{'Authorization':'Bearer '+accessToken,'apikey':SUPABASE_ANON_KEY},body:cfData});
+                cUrl=SUPABASE_URL+'/storage/v1/object/public/music/'+currentUser.id+'/covers/'+cfn;
+            }
+            await fetch(SUPABASE_URL+'/rest/v1/tracks',{method:'POST',headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken,'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify({title,artist,artist_id:currentUser.id,audio_url:aUrl,cover_url:cUrl,plays:0})});
             p.innerHTML='<span style="color:#1db954">✅ Загружено!</span>';
-            setTimeout(()=>{modal.style.display='none';loadTracks()},1000);
+            setTimeout(()=>{uploadModal.style.display='none';clearUploadForm();loadTracks()},1000);
         }catch(e){p.innerHTML='<span style="color:#ff4d4d">❌ '+e.message+'</span>'}
     });
+    
+    // Редактирование профиля
+    const editModal=document.getElementById('editProfileModal');
+    document.getElementById('editProfileBtn').addEventListener('click',e=>{
+        e.preventDefault();
+        document.getElementById('userDropdown').classList.remove('show');
+        document.getElementById('editName').value=currentUser.user_metadata?.name||'';
+        document.getElementById('editAvatar').value=currentUser.user_metadata?.avatar_url||'';
+        editModal.style.display='flex';
+    });
+    document.getElementById('cancelEditProfile').addEventListener('click',()=>editModal.style.display='none');
+    document.getElementById('confirmEditProfile').addEventListener('click',async()=>{
+        const name=document.getElementById('editName').value.trim();
+        const avatar=document.getElementById('editAvatar').value.trim();
+        const p=document.getElementById('editProfileProgress');
+        if(!name){p.innerHTML='<span style="color:#ff4d4d">Введите имя</span>';return}
+        p.innerHTML='Сохранение...';
+        try{
+            const res=await fetch(SUPABASE_URL+'/auth/v1/user',{method:'PUT',headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken,'Content-Type':'application/json'},body:JSON.stringify({data:{name,avatar_url:avatar||null}})});
+            if(!res.ok)throw new Error('Ошибка обновления');
+            currentUser.user_metadata={...currentUser.user_metadata,name,avatar_url:avatar||null};
+            localStorage.setItem('supabase_user',JSON.stringify(currentUser));
+            updateUserUI();
+            p.innerHTML='<span style="color:#1db954">✅ Сохранено!</span>';
+            setTimeout(()=>editModal.style.display='none',1000);
+        }catch(e){p.innerHTML='<span style="color:#ff4d4d">❌ '+e.message+'</span>'}
+    });
+}
+
+function clearUploadForm(){
+    document.getElementById('uploadTitle').value='';
+    document.getElementById('uploadAudio').value='';
+    document.getElementById('uploadCover').value='';
+    document.getElementById('uploadProgress').innerHTML='';
 }
 
 function formatTime(s){if(isNaN(s))return'0:00';const m=Math.floor(s/60),sec=Math.floor(s%60);return m+':'+sec.toString().padStart(2,'0')}
@@ -231,4 +317,4 @@ function formatTime(s){if(isNaN(s))return'0:00';const m=Math.floor(s/60),sec=Mat
 init();
 </script>
 </body>
-            </html>
+</html>
