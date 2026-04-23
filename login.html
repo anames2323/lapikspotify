@@ -9,14 +9,14 @@
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
         body { display: flex; align-items: center; justify-content: center; min-height: 100vh; background: linear-gradient(135deg, #0a0a0a 0%, #121212 100%); padding: 20px; }
-        .auth-card { background: #181818; padding: 40px 30px; border-radius: 16px; width: 100%; max-width: 380px; box-shadow: 0 8px 30px rgba(0,0,0,0.5); }
-        .auth-logo { display: flex; align-items: center; justify-content: center; gap: 10px; font-size: 32px; font-weight: 700; color: #1db954; margin-bottom: 30px; }
-        h2 { text-align: center; margin-bottom: 25px; color: #fff; }
+        .auth-card { background: #181818; padding: 30px 25px; border-radius: 16px; width: 100%; max-width: 380px; box-shadow: 0 8px 30px rgba(0,0,0,0.5); }
+        .auth-logo { display: flex; align-items: center; justify-content: center; gap: 10px; font-size: 32px; font-weight: 700; color: #1db954; margin-bottom: 25px; }
+        h2 { text-align: center; margin-bottom: 20px; color: #fff; }
         .input-group { background: #1e1e1e; border-radius: 8px; padding: 0 15px; display: flex; align-items: center; margin-bottom: 15px; border: 1px solid #333; }
         .input-group i { color: #888; margin-right: 12px; }
         .input-group input { background: transparent; border: none; padding: 16px 0; color: #fff; font-size: 16px; width: 100%; outline: none; }
-        .auth-btn { background: #1db954; color: #000; font-weight: 700; font-size: 16px; padding: 16px; border: none; border-radius: 30px; cursor: pointer; width: 100%; margin-top: 10px; transition: 0.2s; }
-        .auth-btn:hover { background: #1ed760; }
+        .auth-btn { background: #1db954; color: #000; font-weight: 700; font-size: 16px; padding: 16px; border: none; border-radius: 30px; cursor: pointer; width: 100%; margin-top: 10px; }
+        .auth-btn:disabled { opacity: 0.5; }
         .auth-error { color: #ff4d4d; font-size: 14px; text-align: center; margin-top: 10px; min-height: 20px; }
         .auth-link { text-align: center; margin-top: 20px; color: #888; }
         .auth-link a { color: #1db954; text-decoration: none; font-weight: 600; }
@@ -28,52 +28,77 @@
         <i class="fab fa-spotify"></i>
         <span>Spoofy</span>
     </div>
-    <h2>Вход в аккаунт</h2>
-    <form id="login-form">
-        <div class="input-group">
-            <i class="fas fa-envelope"></i>
-            <input type="email" id="email" placeholder="Email" required autocomplete="email">
-        </div>
-        <div class="input-group">
-            <i class="fas fa-lock"></i>
-            <input type="password" id="password" placeholder="Пароль" required autocomplete="current-password">
-        </div>
-        <button type="submit" class="auth-btn">Войти</button>
-        <div class="auth-error" id="error"></div>
-    </form>
+    <h2>Вход</h2>
+    
+    <div class="input-group">
+        <i class="fas fa-envelope"></i>
+        <input type="email" id="email" placeholder="Email">
+    </div>
+    <div class="input-group">
+        <i class="fas fa-lock"></i>
+        <input type="password" id="password" placeholder="Пароль">
+    </div>
+    
+    <button class="auth-btn" id="submit-btn" onclick="doLogin()">Войти</button>
+    
+    <div class="auth-error" id="error"></div>
     <p class="auth-link">Нет аккаунта? <a href="register.html">Зарегистрироваться</a></p>
 </div>
+
 <script>
+// ПРАВИЛЬНЫЕ КЛЮЧИ
 const SUPABASE_URL = 'https://axocsccfyyrtcegxvwal.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_Jga_s88V7TAEUSvHIFkMvA_DT5vG44E';
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+// ПРАВИЛЬНОЕ создание клиента
+const { createClient } = window.supabase;
+const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+    auth: {
+        autoRefreshToken: true,
+        persistSession: true,
+        detectSessionInUrl: true
+    }
+});
 
 // Проверка: если уже авторизован - на главную
 supabase.auth.getSession().then(({ data: { session } }) => {
     if (session) window.location.href = 'main.html';
 });
 
-// Обработка входа
-document.getElementById('login-form').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    
+// Функция входа
+window.doLogin = async function() {
     const email = document.getElementById('email').value.trim();
     const password = document.getElementById('password').value;
     const errorEl = document.getElementById('error');
+    const btn = document.getElementById('submit-btn');
     
     if (!email || !password) {
         errorEl.textContent = 'Заполните все поля';
         return;
     }
     
+    btn.disabled = true;
+    btn.textContent = 'Вход...';
+    errorEl.textContent = '';
+    
     try {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        const { data, error } = await supabase.auth.signInWithPassword({
+            email: email,
+            password: password
+        });
+        
         if (error) throw error;
-        window.location.href = 'main.html';
-    } catch (er) {
+        
+        if (data.session) {
+            window.location.href = 'main.html';
+        }
+        
+    } catch (err) {
         errorEl.textContent = 'Неверный email или пароль';
+        btn.disabled = false;
+        btn.textContent = 'Войти';
     }
-});
+};
 </script>
 </body>
 </html>
