@@ -38,14 +38,12 @@
         </p>
     </div>
     
-    <script src="script.js"></script>
     <script>
-        // Проверяем, не авторизован ли уже пользователь
-        const supabase = window.supabase.createClient(
-            'https://axocscfyyrtcegxvwal.supabase.co',
-            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF4b2NzY2Z5eXJ0Y2VneHZ3YWwiLCJyb2xlIjoiYW5vbiIsImlhdCI6MTc0NTQ0MjE2MSwiZXhwIjoyMDYxMDE4MTYxfQ.LhT5jBx2RjGpGZqP9ZBjY8Z3lBmWk1iA2zFkV8ZQf1s'
-        );
+        const SUPABASE_URL = 'https://axocscfyyrtcegxvwal.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF4b2NzY2Z5eXJ0Y2VneHZ3YWwiLCJyb2xlIjoiYW5vbiIsImlhdCI6MTc0NTQ0MjE2MSwiZXhwIjoyMDYxMDE4MTYxfQ.LhT5jBx2RjGpGZqP9ZBjY8Z3lBmWk1iA2zFkV8ZQf1s';
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         
+        // Проверяем, не авторизован ли уже
         async function checkAuth() {
             const { data: { session } } = await supabase.auth.getSession();
             if (session) {
@@ -76,7 +74,6 @@
                 const { data, error } = await supabase.auth.signInWithPassword({ email, password });
                 if (error) throw error;
                 
-                localStorage.setItem('supabase_session', JSON.stringify(data.session));
                 window.location.href = 'index.html';
             } catch (error) {
                 errorEl.textContent = 'Неверный email или пароль';
