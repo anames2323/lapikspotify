@@ -20,7 +20,7 @@
         .error { color: #ff4d4d; font-size: 14px; text-align: center; margin-top: 10px; }
         .link { text-align: center; margin-top: 20px; color: #888; }
         .link a { color: #1db954; text-decoration: none; }
-        .debug { margin-top: 20px; padding: 15px; background: #0a0a0a; border-radius: 8px; color: #00ff00; font-size: 12px; word-break: break-all; }
+        .debug { margin-top: 20px; padding: 15px; background: #0a0a0a; border-radius: 8px; color: #00ff00; font-size: 11px; word-break: break-all; max-height: 200px; overflow-y: auto; }
     </style>
 </head>
 <body>
@@ -32,11 +32,11 @@
     
     <div class="input-box">
         <i class="fas fa-user"></i>
-        <input type="text" id="name" placeholder="Имя" value="Тест">
+        <input type="text" id="name" placeholder="Имя" value="Арсений">
     </div>
     <div class="input-box">
         <i class="fas fa-envelope"></i>
-        <input type="email" id="email" placeholder="Email" value="test1234@mail.com">
+        <input type="email" id="email" placeholder="Email" value="radmirnoros@gmail.com">
     </div>
     <div class="input-box">
         <i class="fas fa-lock"></i>
@@ -49,7 +49,7 @@
     <div class="link">
         Уже есть аккаунт? <a href="login.html">Войти</a>
     </div>
-    <div class="debug" id="debug">Ожидание...</div>
+    <div class="debug" id="debug">Нажми кнопку...</div>
 </div>
 
 <script>
@@ -78,45 +78,47 @@ document.getElementById('regBtn').addEventListener('click', async function() {
     btn.style.opacity = '0.5';
     errorEl.textContent = '';
     
-    log('Отправка запроса...');
+    log('Отправка запроса к: ' + SUPABASE_URL + '/auth/v1/signup');
     
     try {
-        // Прямой запрос к Supabase API
         const response = await fetch(SUPABASE_URL + '/auth/v1/signup', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'apikey': SUPABASE_ANON_KEY,
-                'Authorization': 'Bearer ' + SUPABASE_ANON_KEY
+                'apikey': SUPABASE_ANON_KEY
             },
             body: JSON.stringify({
                 email: email,
                 password: password,
                 data: {
-                    name: name,
-                    avatar_url: 'https://i.pravatar.cc/150?u=' + email
+                    name: name
                 }
             })
         });
         
-        const data = await response.json();
-        
-        log('Ответ: ' + JSON.stringify(data));
-        
-        if (!response.ok) {
-            throw new Error(data.msg || data.message || 'Ошибка регистрации');
+        const text = await response.text();
+        let data;
+        try {
+            data = JSON.parse(text);
+        } catch {
+            data = { raw: text };
         }
         
-        if (data.id) {
-            log('✅ Успех! ID: ' + data.id);
-            alert('Регистрация успешна! Теперь войдите.');
+        log('Статус: ' + response.status + '\nОтвет: ' + JSON.stringify(data, null, 2));
+        
+        if (!response.ok) {
+            const msg = data.msg || data.message || data.error || 'Ошибка';
+            throw new Error(msg);
+        }
+        
+        if (data.id || data.user) {
+            log('✅ УСПЕХ!');
+            alert('Регистрация успешна!');
             window.location.href = 'login.html';
-        } else {
-            log('⚠️ Неожиданный ответ');
         }
         
     } catch (err) {
-        log('❌ Ошибка: ' + err.message);
+        log('❌ ОШИБКА: ' + err.message);
         errorEl.textContent = err.message;
         btn.textContent = 'Зарегистрироваться';
         btn.style.opacity = '1';
