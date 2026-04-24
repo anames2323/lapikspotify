@@ -87,3 +87,75 @@
 <body>
 <div id="loading"><div class="spinner"></div><span>Загрузка BluTube...</span></div>
 <div id="app">
+    <header class="header">
+        <div class="header-left"><div class="logo" onclick="showPage('home')"><i class="fas fa-play"></i> BluTube</div></div>
+        <div class="search-bar"><input type="text" id="searchInput" placeholder="Поиск..."><button onclick="searchVideos()"><i class="fas fa-search"></i></button></div>
+        <div class="header-right">
+            <button class="icon-btn" id="uploadBtn"><i class="fas fa-video"></i></button>
+            <div class="user-btn" id="userMenuBtn"><img id="headerAvatar" src="https://i.pravatar.cc/32?img=7"></div>
+            <div class="dropdown" id="userDropdown">
+                <a href="profile.html"><i class="fas fa-user"></i> Мой канал</a>
+                <a href="admin.html" id="adminPanelBtn" style="display:none"><i class="fas fa-shield"></i> Админ-панель</a>
+                <a href="#" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Выйти</a>
+            </div>
+        </div>
+    </header>
+    <div class="main-content">
+        <div class="sidebar">
+            <div class="sidebar-item active" data-page="home"><i class="fas fa-home"></i>Главная</div>
+            <div class="sidebar-item" data-page="trending"><i class="fas fa-fire"></i>Тренды</div>
+            <div class="sidebar-item" data-page="subscriptions"><i class="fas fa-play"></i>Подписки</div>
+            <div class="sidebar-item" data-page="liked"><i class="fas fa-heart"></i>Лайки</div>
+        </div>
+        <div class="content">
+            <div id="home-page" class="page active"><div class="video-grid" id="videoGrid"></div></div>
+            <div id="trending-page" class="page"><h2 style="margin-bottom:16px">Тренды</h2><div class="video-grid" id="trendingGrid"></div></div>
+            <div id="subscriptions-page" class="page"><h2 style="margin-bottom:16px">Подписки</h2><div class="video-grid" id="subsGrid"></div></div>
+            <div id="liked-page" class="page"><h2 style="margin-bottom:16px">Понравившиеся</h2><div class="video-grid" id="likedGrid"></div></div>
+            <div class="watch-page" id="watchPage">
+                <div class="watch-main">
+                    <video class="watch-video" id="watchVideo" controls></video>
+                    <div class="watch-title" id="watchTitle"></div>
+                    <div class="watch-info">
+                        <div class="channel-info" id="watchChannelInfo">
+                            <img id="watchChannelAvatar"><div><h4 id="watchChannelName"></h4><p id="watchSubsCount" style="font-size:12px;color:#aaa"></p></div>
+                            <button class="subscribe-btn sub" id="watchSubscribeBtn">Подписаться</button>
+                        </div>
+                        <div class="like-buttons">
+                            <button id="watchLikeBtn"><i class="far fa-thumbs-up"></i> <span id="watchLikes">0</span></button>
+                            <div class="divider"></div>
+                            <button id="watchDislikeBtn"><i class="far fa-thumbs-down"></i></button>
+                        </div>
+                    </div>
+                    <div class="watch-desc" id="watchDesc"></div>
+                    <div class="comments-section">
+                        <h3 id="commentsCount">Комментарии</h3>
+                        <div class="comment-input"><img id="commentAvatar" src="https://i.pravatar.cc/40?img=7"><input type="text" id="commentInput" placeholder="Оставить комментарий..."><button class="icon-btn" onclick="addComment()"><i class="fas fa-paper-plane"></i></button></div>
+                        <div id="commentsList"></div>
+                    </div>
+                </div>
+                <div class="watch-sidebar" id="watchSidebar"></div>
+            </div>
+        </div>
+    </div>
+    <div class="modal" id="uploadModal">
+    <div class="modal-content">
+        <h2><i class="fas fa-video" style="color:#3b82f6"></i> Загрузить видео</h2>
+        <label>Название видео</label>
+        <input id="uploadTitle" placeholder="Введите название">
+        <label>Описание</label>
+        <textarea id="uploadDesc" placeholder="Опишите видео"></textarea>
+        <label>Видео файл</label>
+        <input type="file" id="uploadVideoFile" accept="video/*">
+        <label>Обложка (необязательно)</label>
+        <input type="file" id="uploadThumbFile" accept="image/*">
+        <div class="upload-progress" id="uploadProgress">
+            <div class="upload-bar"><div class="upload-fill" id="uploadFill"></div></div>
+            <span id="uploadPercent" style="font-size:12px;color:#aaa">0%</span>
+        </div>
+        <div class="modal-buttons">
+            <button class="btn-primary" id="confirmUpload">Загрузить</button>
+            <button class="btn-secondary" id="cancelUpload">Отмена</button>
+        </div>
+    </div>
+    </div>
