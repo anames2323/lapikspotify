@@ -16,20 +16,17 @@
         .content-card{background:#1a1a1a;border-radius:12px;padding:24px}
         table{width:100%;border-collapse:collapse;font-size:13px}
         th,td{padding:10px;text-align:left;border-bottom:1px solid #272727}th{color:#aaa}
-        .btn-sm{padding:5px 12px;border:none;border-radius:12px;cursor:pointer;font-size:11px;margin:2px;transition:0.2s}
+        .btn-sm{padding:5px 12px;border:none;border-radius:12px;cursor:pointer;font-size:11px;margin:2px}
         .btn-blue{background:#3b82f6;color:#fff}.btn-red{background:#ef4444;color:#fff}.btn-green{background:#10b981;color:#fff}.btn-yellow{background:#f59e0b;color:#000}
-        input,select,textarea{background:#272727;border:1px solid #3e3e3e;color:#fff;border-radius:6px;padding:8px 12px;font-size:13px}
-        input[type="number"]{width:80px}input[type="text"]{width:180px}textarea{width:100%;height:60px;resize:vertical}
+        input,select,textarea{background:#272727;border:1px solid #3e3e3e;color:#fff;border-radius:6px;padding:8px 12px;font-size:13px}input[type="number"]{width:80px}input[type="text"]{width:180px}textarea{width:100%;height:60px;resize:vertical}
         .stats-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;margin-bottom:24px}
         .stat-card{background:#272727;padding:16px;border-radius:10px;text-align:center}.stat-card h3{font-size:28px;color:#3b82f6}.stat-card p{color:#aaa;font-size:13px}
         .modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);align-items:center;justify-content:center;z-index:1000}
-        .modal-content{background:#1a1a1a;padding:24px;border-radius:12px;width:90%;max-width:500px;max-height:80vh;overflow-y:auto}
+        .modal-content{background:#1a1a1a;padding:24px;border-radius:12px;width:90%;max-width:500px}
         .modal-content h2{margin-bottom:16px}.modal-content label{color:#aaa;display:block;margin-bottom:4px;font-size:13px}
-        .modal-content input,.modal-content textarea,.modal-content select{width:100%;margin-bottom:12px}
+        .modal-content input,.modal-content textarea{width:100%;margin-bottom:12px}
         .modal-buttons{display:flex;gap:10px;margin-top:16px}
-        .btn-primary{flex:1;padding:12px;background:#3b82f6;border:none;border-radius:20px;color:#fff;font-weight:700;cursor:pointer}
-        .btn-secondary{flex:1;padding:12px;background:#272727;border:none;border-radius:20px;color:#fff;cursor:pointer}
-        .announcement-box{background:#272727;padding:12px;border-radius:8px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center}
+        .btn-primary{flex:1;padding:12px;background:#3b82f6;border:none;border-radius:20px;color:#fff;font-weight:700;cursor:pointer}.btn-secondary{flex:1;padding:12px;background:#272727;border:none;border-radius:20px;color:#fff;cursor:pointer}
         #loading{display:flex;align-items:center;justify-content:center;height:100vh}
         .spinner{width:48px;height:48px;border:3px solid #272727;border-top-color:#3b82f6;border-radius:50%;animation:spin 1s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}
     </style>
@@ -60,7 +57,7 @@
 const SUPABASE_URL='https://axocsccfyyrtcegxvwal.supabase.co';
 const SUPABASE_ANON_KEY='sb_publishable_Jga_s88V7TAEUSvHIFkMvA_DT5vG44E';
 const ADMIN_EMAIL='radmirnoros@gmail.com';
-let accessToken=null,allVideos=[],currentUser=null,allUsers=[];
+let accessToken=null,allVideos=[],currentUser=null,allProfiles=[];
 
 async function init(){
     var t=localStorage.getItem('supabase_token'),u=localStorage.getItem('supabase_user');
@@ -74,17 +71,18 @@ async function init(){
 async function loadData(){
     var r=await fetch(SUPABASE_URL+'/rest/v1/videos?select=*&order=created_at.desc',{headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken}});
     allVideos=(await r.json())||[];
+    // Загружаем профили из таблицы profiles
     try{
-        var ur=await fetch(SUPABASE_URL+'/auth/v1/users',{headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken}});
-        if(ur.ok){allUsers=(await ur.json())||[]}
-    }catch(e){allUsers=[]}
+        var pr=await fetch(SUPABASE_URL+'/rest/v1/profiles?select=*',{headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken}});
+        allProfiles=(await pr.json())||[];
+    }catch(e){allProfiles=[]}
     updateStats();
 }
 
 function updateStats(){
     var bans=JSON.parse(localStorage.getItem('blutube_bans')||'[]');
     document.getElementById('statsGrid').innerHTML=
-        '<div class="stat-card"><h3>'+(allUsers.length||'-')+'</h3><p>Пользователей</p></div>'+
+        '<div class="stat-card"><h3>'+allProfiles.length+'</h3><p>Пользователей</p></div>'+
         '<div class="stat-card"><h3>'+allVideos.length+'</h3><p>Видео</p></div>'+
         '<div class="stat-card"><h3>'+allVideos.reduce((s,x)=>s+(x.views||0),0)+'</h3><p>Просмотров</p></div>'+
         '<div class="stat-card"><h3>'+bans.length+'</h3><p>Забанено</p></div>';
@@ -103,73 +101,63 @@ function showTab(tab){
     else if(tab==='stats')loadStats();
 }
 
-// === ПОЛЬЗОВАТЕЛИ (ВСЕ из Supabase Auth) ===
+// === ПОЛЬЗОВАТЕЛИ (из profiles) ===
 async function loadUsers(){
-    if(!allUsers.length){
-        try{
-            var r=await fetch(SUPABASE_URL+'/auth/v1/users',{headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken}});
-            if(r.ok)allUsers=(await r.json())||[];
-        }catch(e){}
-    }
     var h='<table><tr><th>Email</th><th>Имя</th><th>Подписчики</th><th>Видео</th><th>Действия</th></tr>';
-    for(var i=0;i<allUsers.length;i++){
-        var u=allUsers[i];
-        var name=u.user_metadata?.name||u.email?.split('@')[0]||'Пользователь';
-        var f=await fetch(SUPABASE_URL+'/rest/v1/follows?select=*&following_id=eq.'+u.id,{headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken,'Prefer':'count=exact'}});
+    for(var i=0;i<allProfiles.length;i++){
+        var p=allProfiles[i];
+        var name=p.name||p.email?.split('@')[0]||'Пользователь';
+        var email=p.email||'-';
+        var f=await fetch(SUPABASE_URL+'/rest/v1/follows?select=*&following_id=eq.'+p.id,{headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken,'Prefer':'count=exact'}});
         var fCount=parseInt(f.headers.get('content-range')?.split('/')[1])||0;
-        var uVids=allVideos.filter(v=>v.artist_id===u.id);
-        var settings=JSON.parse(localStorage.getItem('blutube_users')||'{}')[u.id]||{};
-        var verified=settings.verified||fCount>=100000;
-        h+='<tr><td>'+u.email+'</td><td>'+(verified?'⭐ ':'')+name+'</td><td>'+fCount+'</td><td>'+uVids.length+'</td><td><button class="btn-sm btn-blue" onclick="openEdit(\''+u.id+'\',\''+name+'\','+fCount+')">✏️</button><button class="btn-sm btn-yellow" onclick="openBan(\''+u.id+'\')">🚫</button><button class="btn-sm btn-red" onclick="deleteUserVideos(\''+u.id+'\')">🗑️</button></td></tr>';
+        var uVids=allVideos.filter(v=>v.artist_id===p.id);
+        var verified=JSON.parse(localStorage.getItem('blutube_users')||'{}')[p.id]?.verified||false;
+        h+='<tr><td>'+email+'</td><td>'+(verified?'⭐ ':'')+name+'</td><td>'+fCount+'</td><td>'+uVids.length+'</td><td><button class="btn-sm btn-blue" onclick="openEdit(\''+p.id+'\',\''+name+'\')">✏️</button><button class="btn-sm btn-yellow" onclick="openBan(\''+p.id+'\')">🚫</button><button class="btn-sm btn-red" onclick="deleteUserVideos(\''+p.id+'\')">🗑️</button></td></tr>';
     }
     document.getElementById('tabContent').innerHTML=h+'</table>'||'<p>Нет пользователей</p>';
+    if(!allProfiles.length)document.getElementById('tabContent').innerHTML='<p>Нет пользователей. Зарегистрируйтесь или проверьте таблицу profiles.</p>';
 }
 
 // === ВИДЕО ===
-function loadVideos(){
-    var h='<table><tr><th>Название</th><th>Автор</th><th>Просмотры</th><th>Действия</th></tr>';
-    allVideos.forEach(v=>{h+='<tr><td>'+v.title+'</td><td>'+v.artist+'</td><td>'+(v.views||0)+'</td><td><button class="btn-sm btn-blue" onclick="addViews(\''+v.id+'\',1000)">+1K</button><button class="btn-sm btn-blue" onclick="addViews(\''+v.id+'\',10000)">+10K</button><button class="btn-sm btn-green" onclick="addLikesToVideo(\''+v.id+'\',100)">+100❤️</button><button class="btn-sm btn-red" onclick="deleteVideo(\''+v.id+'\')">🗑️</button></td></tr>'});
-    document.getElementById('tabContent').innerHTML=h+'</table>';
-}
+function loadVideos(){var h='<table><tr><th>Название</th><th>Автор</th><th>Просмотры</th><th>Действия</th></tr>';allVideos.forEach(v=>{h+='<tr><td>'+v.title+'</td><td>'+v.artist+'</td><td>'+(v.views||0)+'</td><td><button class="btn-sm btn-blue" onclick="addViews(\''+v.id+'\',1000)">+1K</button><button class="btn-sm btn-blue" onclick="addViews(\''+v.id+'\',10000)">+10K</button><button class="btn-sm btn-red" onclick="deleteVideo(\''+v.id+'\')">🗑️</button></td></tr>'});document.getElementById('tabContent').innerHTML=h+'</table>'}
 window.addViews=async function(id,c){var v=allVideos.find(x=>x.id===id);await fetch(SUPABASE_URL+'/rest/v1/videos?id=eq.'+id,{method:'PATCH',headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken,'Content-Type':'application/json'},body:JSON.stringify({views:(v?.views||0)+c})});loadData();loadVideos()}
-window.addLikesToVideo=async function(id,c){for(var i=0;i<c;i++){await fetch(SUPABASE_URL+'/rest/v1/likes',{method:'POST',headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken,'Content-Type':'application/json'},body:JSON.stringify({user_id:'00000000-0000-0000-0000-000000000000',video_id:id})}).catch(()=>{})}loadVideos()}
 window.deleteVideo=async function(id){if(confirm('Удалить?')){await fetch(SUPABASE_URL+'/rest/v1/videos?id=eq.'+id,{method:'DELETE',headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken}});loadData();loadVideos()}}
 
-// === ЗАГРУЗКА ПО ССЫЛКЕ ===
+// === ЗАГРУЗКА ===
 function loadUpload(){document.getElementById('tabContent').innerHTML='<div style="max-width:500px"><h3>Загрузить по ссылке</h3><label>Название</label><input type="text" id="urlTitle"><label>Ссылка на видео</label><input type="text" id="urlVideo"><label>Ссылка на обложку</label><input type="text" id="urlThumb"><button class="btn-sm btn-green" onclick="uploadByUrl()" style="width:100%;padding:14px;margin-top:16px">Загрузить</button><div id="urlStatus" style="margin-top:12px"></div></div>'}
 window.uploadByUrl=async function(){var title=document.getElementById('urlTitle').value.trim(),vUrl=document.getElementById('urlVideo').value.trim(),tUrl=document.getElementById('urlThumb').value.trim(),st=document.getElementById('urlStatus');if(!title||!vUrl){st.textContent='❌ Введите название и ссылку';return}st.textContent='⏳ Загрузка...';try{var r=await fetch(SUPABASE_URL+'/rest/v1/videos',{method:'POST',headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken,'Content-Type':'application/json'},body:JSON.stringify({title:title,artist:'BluTube Admin',artist_id:currentUser.id,video_url:vUrl,thumbnail_url:tUrl||null,description:'',views:0})});if(r.ok){st.innerHTML='✅ Загружено!<br><small>'+title+'</small>';loadData()}else{var d=await r.json();st.textContent='❌ Ошибка: '+(d.message||'')}}catch(e){st.textContent='❌ '+e.message}}
 
 // === БАНЫ ===
-function loadBans(){var bans=JSON.parse(localStorage.getItem('blutube_bans')||'[]');var h='<button class="btn-sm btn-yellow" onclick="openBanModal()" style="margin-bottom:16px">🚫 Забанить</button><table><tr><th>ID</th><th>Причина</th><th>Дата</th><th>Действия</th></tr>';bans.forEach((b,i)=>{h+='<tr><td>'+b.id+'</td><td>'+b.reason+'</td><td>'+b.date+'</td><td><button class="btn-sm btn-green" onclick="unbanUser('+i+')">Разбанить</button></td></tr>'});document.getElementById('tabContent').innerHTML=h+'</table>'}
+function loadBans(){var bans=JSON.parse(localStorage.getItem('blutube_bans')||'[]');var h='<button class="btn-sm btn-yellow" onclick="openBanModal()" style="margin-bottom:16px">🚫 Забанить</button><table><tr><th>ID</th><th>Причина</th><th>Действия</th></tr>';bans.forEach((b,i)=>{h+='<tr><td>'+b.id+'</td><td>'+b.reason+'</td><td><button class="btn-sm btn-green" onclick="unbanUser('+i+')">Разбанить</button></td></tr>'});document.getElementById('tabContent').innerHTML=h+'</table>'}
 window.openBan=function(id){document.getElementById('banUserId').value=id;document.getElementById('banModal').style.display='flex'}
 window.openBanModal=function(){document.getElementById('banModal').style.display='flex'}
 window.closeBanModal=function(){document.getElementById('banModal').style.display='none'}
-window.banUser=function(){var id=document.getElementById('banUserId').value.trim(),reason=document.getElementById('banReason').value.trim();if(!id)return;var bans=JSON.parse(localStorage.getItem('blutube_bans')||'[]');bans.push({id:id,reason:reason,date:new Date().toLocaleDateString()});localStorage.setItem('blutube_bans',JSON.stringify(bans));closeBanModal();loadBans();updateStats()}
+window.banUser=function(){var id=document.getElementById('banUserId').value.trim(),reason=document.getElementById('banReason').value.trim();if(!id)return;var bans=JSON.parse(localStorage.getItem('blutube_bans')||'[]');bans.push({id:id,reason:reason});localStorage.setItem('blutube_bans',JSON.stringify(bans));closeBanModal();loadBans();updateStats()}
 window.unbanUser=function(i){var bans=JSON.parse(localStorage.getItem('blutube_bans')||'[]');bans.splice(i,1);localStorage.setItem('blutube_bans',JSON.stringify(bans));loadBans();updateStats()}
 
 // === МОДЕРАЦИЯ ===
-async function loadCommentsMod(){var r=await fetch(SUPABASE_URL+'/rest/v1/comments?select=*&order=created_at.desc&limit=50',{headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken}});var c=await r.json();var h='<table><tr><th>Текст</th><th>Дата</th><th>Действия</th></tr>';(c||[]).forEach(x=>{h+='<tr><td>'+(x.text||'').substring(0,50)+'</td><td>'+new Date(x.created_at).toLocaleDateString()+'</td><td><button class="btn-sm btn-red" onclick="deleteComment(\''+x.id+'\')">🗑️</button></td></tr>'});document.getElementById('tabContent').innerHTML=h+'</table>'}
+async function loadCommentsMod(){var r=await fetch(SUPABASE_URL+'/rest/v1/comments?select=*&order=created_at.desc&limit=50',{headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken}});var c=await r.json();var h='<table><tr><th>Текст</th><th>Действия</th></tr>';(c||[]).forEach(x=>{h+='<tr><td>'+(x.text||'').substring(0,50)+'</td><td><button class="btn-sm btn-red" onclick="deleteComment(\''+x.id+'\')">🗑️</button></td></tr>'});document.getElementById('tabContent').innerHTML=h+'</table>'}
 window.deleteComment=async function(id){if(confirm('Удалить?')){await fetch(SUPABASE_URL+'/rest/v1/comments?id=eq.'+id,{method:'DELETE',headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken}});loadCommentsMod()}}
 
 // === ОБЪЯВЛЕНИЯ ===
-function loadAnnounce(){var a=JSON.parse(localStorage.getItem('blutube_announce')||'null');var h='<button class="btn-sm btn-blue" onclick="openAnnounceModal()" style="margin-bottom:16px">📢 Создать</button>';if(a){h+='<div class="announcement-box" style="border-left:4px solid '+a.color+'"><div><b>'+a.text+'</b><br><small>'+a.date+'</small></div><button class="btn-sm btn-red" onclick="deleteAnnounce()">🗑️</button></div>'}else{h+='<p style="color:#aaa">Нет объявлений</p>'}document.getElementById('tabContent').innerHTML=h}
+function loadAnnounce(){var a=JSON.parse(localStorage.getItem('blutube_announce')||'null');var h='<button class="btn-sm btn-blue" onclick="openAnnounceModal()" style="margin-bottom:16px">📢 Создать</button>';if(a){h+='<div style="background:#272727;padding:12px;border-radius:8px;border-left:4px solid '+a.color+'">'+a.text+' <button class="btn-sm btn-red" onclick="deleteAnnounce()">🗑️</button></div>'}else{h+='<p style="color:#aaa">Нет объявлений</p>'}document.getElementById('tabContent').innerHTML=h}
 window.openAnnounceModal=function(){document.getElementById('announceModal').style.display='flex'}
 window.closeAnnounceModal=function(){document.getElementById('announceModal').style.display='none'}
-window.createAnnouncement=function(){var text=document.getElementById('announceText').value.trim(),color=document.getElementById('announceColor').value;if(!text)return;localStorage.setItem('blutube_announce',JSON.stringify({text:text,color:color,date:new Date().toLocaleDateString()}));closeAnnounceModal();loadAnnounce()}
+window.createAnnouncement=function(){var text=document.getElementById('announceText').value.trim(),color=document.getElementById('announceColor').value;if(!text)return;localStorage.setItem('blutube_announce',JSON.stringify({text:text,color:color}));closeAnnounceModal();loadAnnounce()}
 window.deleteAnnounce=function(){localStorage.removeItem('blutube_announce');loadAnnounce()}
 
 // === ВЕРИФИКАЦИЯ ===
-function loadVerify(){if(!allUsers.length)return;var h='<table><tr><th>Email</th><th>Имя</th><th>Статус</th><th>Действия</th></tr>';allUsers.forEach(async u=>{var f=await fetch(SUPABASE_URL+'/rest/v1/follows?select=*&following_id=eq.'+u.id,{headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken,'Prefer':'count=exact'}});var fc=parseInt(f.headers.get('content-range')?.split('/')[1])||0;var s=JSON.parse(localStorage.getItem('blutube_users')||'{}')[u.id]||{};var v=s.verified||fc>=100000;h+='<tr><td>'+u.email+'</td><td>'+(u.user_metadata?.name||'-')+'</td><td>'+(v?'✅':'❌')+'</td><td><button class="btn-sm btn-blue" onclick="toggleVerify(\''+u.id+'\','+!v+')">'+(v?'Убрать':'Выдать')+'</button></td></tr>'});setTimeout(()=>document.getElementById('tabContent').innerHTML=h+'</table>',500)}
-window.toggleVerify=function(id,status){var s=JSON.parse(localStorage.getItem('blutube_users')||'{}');s[id]=s[id]||{};s[id].verified=status;localStorage.setItem('blutube_users',JSON.stringify(s));loadVerify()}
+function loadVerify(){var h='<table><tr><th>Email</th><th>Имя</th><th>Статус</th><th>Действия</th></tr>';allProfiles.forEach(p=>{var v=JSON.parse(localStorage.getItem('blutube_users')||'{}')[p.id]?.verified||false;h+='<tr><td>'+p.email+'</td><td>'+p.name+'</td><td>'+(v?'✅':'❌')+'</td><td><button class="btn-sm btn-blue" onclick="toggleVerify(\''+p.id+'\','+!v+')">'+(v?'Убрать':'Выдать')+'</button></td></tr>'});document.getElementById('tabContent').innerHTML=h+'</table>'}
+window.toggleVerify=function(id,v){var s=JSON.parse(localStorage.getItem('blutube_users')||'{}');s[id]=s[id]||{};s[id].verified=v;localStorage.setItem('blutube_users',JSON.stringify(s));loadVerify()}
 
 // === СТАТИСТИКА ===
-function loadStats(){var top=allVideos.sort((a,b)=>(b.views||0)-(a.views||0)).slice(0,5);var bans=JSON.parse(localStorage.getItem('blutube_bans')||'[]');document.getElementById('tabContent').innerHTML='<h3>📊 Топ-5 видео</h3><table><tr><th>Название</th><th>Просмотры</th></tr>'+top.map(v=>'<tr><td>'+v.title+'</td><td>'+(v.views||0)+'</td></tr>').join('')+'</table><h3 style="margin-top:24px">📈 Общая статистика</h3><p>Пользователей: '+(allUsers.length||'-')+'</p><p>Видео: '+allVideos.length+'</p><p>Просмотров: '+allVideos.reduce((s,x)=>s+(x.views||0),0)+'</p><p>Забанено: '+bans.length+'</p>'}
+function loadStats(){var top=allVideos.sort((a,b)=>(b.views||0)-(a.views||0)).slice(0,5);document.getElementById('tabContent').innerHTML='<h3>📊 Топ-5 видео</h3><table><tr><th>Название</th><th>Просмотры</th></tr>'+top.map(v=>'<tr><td>'+v.title+'</td><td>'+(v.views||0)+'</td></tr>').join('')+'</table><h3>📈 Общая</h3><p>Пользователей: '+allProfiles.length+'</p><p>Видео: '+allVideos.length+'</p><p>Просмотров: '+allVideos.reduce((s,x)=>s+(x.views||0),0)+'</p>'}
 
 // === ОБЩИЕ ===
-window.openEdit=function(id,name,fc){document.getElementById('editId').value=id;document.getElementById('editName').value=name;document.getElementById('addFollowers').value=0;document.getElementById('editModal').style.display='flex'}
+window.openEdit=function(id,name){document.getElementById('editId').value=id;document.getElementById('editName').value=name;document.getElementById('addFollowers').value=0;document.getElementById('editModal').style.display='flex'}
 window.closeModal=function(){document.getElementById('editModal').style.display='none'}
-window.saveEdit=async function(){var id=document.getElementById('editId').value,name=document.getElementById('editName').value,addF=parseInt(document.getElementById('addFollowers').value)||0;for(var i=0;i<addF;i++){await fetch(SUPABASE_URL+'/rest/v1/follows',{method:'POST',headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken,'Content-Type':'application/json'},body:JSON.stringify({follower_id:'00000000-0000-0000-0000-000000000000',following_id:id})}).catch(()=>{})}var uVids=allVideos.filter(v=>v.artist_id===id);for(var j=0;j<uVids.length;j++){await fetch(SUPABASE_URL+'/rest/v1/videos?id=eq.'+uVids[j].id,{method:'PATCH',headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken,'Content-Type':'application/json'},body:JSON.stringify({artist:name})})}closeModal();loadData();loadUsers()}
+window.saveEdit=async function(){var id=document.getElementById('editId').value,name=document.getElementById('editName').value,addF=parseInt(document.getElementById('addFollowers').value)||0;for(var i=0;i<addF;i++){await fetch(SUPABASE_URL+'/rest/v1/follows',{method:'POST',headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken,'Content-Type':'application/json'},body:JSON.stringify({follower_id:'00000000-0000-0000-0000-000000000000',following_id:id})}).catch(()=>{})}closeModal();loadData();loadUsers()}
 window.deleteUserVideos=async function(id){if(confirm('Удалить все видео?')){for(var v of allVideos.filter(v=>v.artist_id===id)){await fetch(SUPABASE_URL+'/rest/v1/videos?id=eq.'+v.id,{method:'DELETE',headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken}})}loadData();loadUsers()}}
 </script>
 </body>
-                                                                                                                                                                                                                                                                                                                      </html>
+</html>
