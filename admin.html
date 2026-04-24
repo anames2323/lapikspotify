@@ -29,8 +29,6 @@
         .modal-buttons{display:flex;gap:10px;margin-top:16px}
         .btn-primary{flex:1;padding:12px;background:#3b82f6;border:none;border-radius:20px;color:#fff;font-weight:700;cursor:pointer}
         .btn-secondary{flex:1;padding:12px;background:#272727;border:none;border-radius:20px;color:#fff;cursor:pointer}
-        .badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px}
-        .badge-green{background:#10b98120;color:#10b981}.badge-red{background:#ef444420;color:#ef4444}.badge-yellow{background:#f59e0b20;color:#f59e0b}
         .announcement-box{background:#272727;padding:12px;border-radius:8px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center}
         #loading{display:flex;align-items:center;justify-content:center;height:100vh}
         .spinner{width:48px;height:48px;border:3px solid #272727;border-top-color:#3b82f6;border-radius:50%;animation:spin 1s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}
@@ -55,66 +53,123 @@
         <div class="content-card"><div id="tabContent"></div></div>
     </div>
 </div>
-<!-- Модалки -->
-<div class="modal" id="editModal"><div class="modal-content"><h2>Редактировать</h2><input type="hidden" id="editId"><label>Имя</label><input type="text" id="editName"><label>Добавить подписчиков</label><input type="number" id="addFollowers" value="0"><label>Добавить лайков (на все видео)</label><input type="number" id="addLikes" value="0"><div class="modal-buttons"><button class="btn-primary" onclick="saveEdit()">Сохранить</button><button class="btn-secondary" onclick="closeModal()">Отмена</button></div></div></div>
-<div class="modal" id="banModal"><div class="modal-content"><h2>Забанить пользователя</h2><label>ID пользователя</label><input type="text" id="banUserId" placeholder="UUID"><label>Причина</label><input type="text" id="banReason" placeholder="Причина бана"><div class="modal-buttons"><button class="btn-primary" onclick="banUser()">Забанить</button><button class="btn-secondary" onclick="closeBanModal()">Отмена</button></div></div></div>
-<div class="modal" id="announceModal"><div class="modal-content"><h2>Создать объявление</h2><label>Текст</label><textarea id="announceText" placeholder="Текст объявления..."></textarea><label>Цвет</label><select id="announceColor"><option value="#3b82f6">Синий</option><option value="#10b981">Зелёный</option><option value="#f59e0b">Жёлтый</option><option value="#ef4444">Красный</option></select><div class="modal-buttons"><button class="btn-primary" onclick="createAnnouncement()">Создать</button><button class="btn-secondary" onclick="closeAnnounceModal()">Отмена</button></div></div></div>
+<div class="modal" id="editModal"><div class="modal-content"><h2>Редактировать</h2><input type="hidden" id="editId"><label>Имя</label><input type="text" id="editName"><label>Добавить подписчиков</label><input type="number" id="addFollowers" value="0"><div class="modal-buttons"><button class="btn-primary" onclick="saveEdit()">Сохранить</button><button class="btn-secondary" onclick="closeModal()">Отмена</button></div></div></div>
+<div class="modal" id="banModal"><div class="modal-content"><h2>Забанить</h2><label>ID</label><input type="text" id="banUserId"><label>Причина</label><input type="text" id="banReason"><div class="modal-buttons"><button class="btn-primary" onclick="banUser()">Забанить</button><button class="btn-secondary" onclick="closeBanModal()">Отмена</button></div></div></div>
+<div class="modal" id="announceModal"><div class="modal-content"><h2>Объявление</h2><label>Текст</label><textarea id="announceText"></textarea><label>Цвет</label><select id="announceColor"><option value="#3b82f6">Синий</option><option value="#10b981">Зелёный</option><option value="#f59e0b">Жёлтый</option><option value="#ef4444">Красный</option></select><div class="modal-buttons"><button class="btn-primary" onclick="createAnnouncement()">Создать</button><button class="btn-secondary" onclick="closeAnnounceModal()">Отмена</button></div></div></div>
 <script>
 const SUPABASE_URL='https://axocsccfyyrtcegxvwal.supabase.co';
 const SUPABASE_ANON_KEY='sb_publishable_Jga_s88V7TAEUSvHIFkMvA_DT5vG44E';
 const ADMIN_EMAIL='radmirnoros@gmail.com';
-let accessToken=null,allVideos=[],currentUser=null;
+let accessToken=null,allVideos=[],currentUser=null,allUsers=[];
 
-async function init(){var t=localStorage.getItem('supabase_token'),u=localStorage.getItem('supabase_user');if(!t||!u){window.location.href='login.html';return}accessToken=t;currentUser=JSON.parse(u);if(currentUser.email!==ADMIN_EMAIL){alert('Доступ запрещён!');window.location.href='main.html';return}document.getElementById('loading').style.display='none';document.getElementById('adminApp').style.display='block';await loadData();showTab('users')}init();
-async function loadData(){var r=await fetch(SUPABASE_URL+'/rest/v1/videos?select=*&order=created_at.desc',{headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken}});allVideos=(await r.json())||[];updateStats()}
-function updateStats(){var users=[];allVideos.forEach(v=>{if(!users.find(u=>u.id===v.artist_id))users.push({id:v.artist_id})});var bans=JSON.parse(localStorage.getItem('blutube_bans')||'[]');document.getElementById('statsGrid').innerHTML=`<div class="stat-card"><h3>${users.length}</h3><p>Пользователей</p></div><div class="stat-card"><h3>${allVideos.length}</h3><p>Видео</p></div><div class="stat-card"><h3>${allVideos.reduce((s,x)=>s+(x.views||0),0)}</h3><p>Просмотров</p></div><div class="stat-card"><h3>${bans.length}</h3><p>Забанено</p></div>`}
-function showTab(tab){document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));event.target.classList.add('active');if(tab==='users')loadUsers();else if(tab==='videos')loadVideos();else if(tab==='upload')loadUpload();else if(tab==='bans')loadBans();else if(tab==='comments')loadCommentsMod();else if(tab==='announce')loadAnnounce();else if(tab==='verify')loadVerify();else if(tab==='stats')loadStats()}
+async function init(){
+    var t=localStorage.getItem('supabase_token'),u=localStorage.getItem('supabase_user');
+    if(!t||!u){window.location.href='login.html';return}
+    accessToken=t;currentUser=JSON.parse(u);
+    if(currentUser.email!==ADMIN_EMAIL){alert('Доступ запрещён!');window.location.href='main.html';return}
+    document.getElementById('loading').style.display='none';document.getElementById('adminApp').style.display='block';
+    await loadData();showTab('users');
+}init();
 
-// ПОЛЬЗОВАТЕЛИ
-async function loadUsers(){var users=[];allVideos.forEach(v=>{if(!users.find(u=>u.id===v.artist_id))users.push({id:v.artist_id,name:v.artist})});var h='<table><tr><th>Имя</th><th>Подписчики</th><th>Видео</th><th>Действия</th></tr>';for(var u of users){var f=await fetch(SUPABASE_URL+'/rest/v1/follows?select=*&following_id=eq.'+u.id,{headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken,'Prefer':'count=exact'}});var fc=parseInt(f.headers.get('content-range')?.split('/')[1])||0;h+=`<tr><td>${u.name}</td><td>${fc}</td><td>${allVideos.filter(v=>v.artist_id===u.id).length}</td><td><button class="btn-sm btn-blue" onclick="openEdit('${u.id}','${u.name}',${fc})">✏️</button><button class="btn-sm btn-yellow" onclick="openBan('${u.id}')">🚫</button><button class="btn-sm btn-red" onclick="deleteUserVideos('${u.id}')">🗑️</button></td></tr>`}document.getElementById('tabContent').innerHTML=h+'</table>'}
-window.openEdit=function(id,name,fc){document.getElementById('editId').value=id;document.getElementById('editName').value=name;document.getElementById('addFollowers').value=0;document.getElementById('addLikes').value=0;document.getElementById('editModal').style.display='flex'}
-window.closeModal=function(){document.getElementById('editModal').style.display='none'}
-window.saveEdit=async function(){var id=document.getElementById('editId').value,name=document.getElementById('editName').value,addF=parseInt(document.getElementById('addFollowers').value)||0,addL=parseInt(document.getElementById('addLikes').value)||0;for(var i=0;i<addF;i++){await fetch(SUPABASE_URL+'/rest/v1/follows',{method:'POST',headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken,'Content-Type':'application/json'},body:JSON.stringify({follower_id:'00000000-0000-0000-0000-000000000000',following_id:id})}).catch(()=>{})}if(addL>0){var vids=allVideos.filter(v=>v.artist_id===id);for(var v of vids){await fetch(SUPABASE_URL+'/rest/v1/videos?id=eq.'+v.id,{method:'PATCH',headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken,'Content-Type':'application/json'},body:JSON.stringify({views:(v.views||0)+Math.floor(addL/vids.length)})})}}closeModal();loadData();loadUsers()}
-window.deleteUserVideos=async function(id){if(confirm('Удалить все видео?')){for(var v of allVideos.filter(v=>v.artist_id===id)){await fetch(SUPABASE_URL+'/rest/v1/videos?id=eq.'+v.id,{method:'DELETE',headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken}})}loadData();loadUsers()}}
+async function loadData(){
+    var r=await fetch(SUPABASE_URL+'/rest/v1/videos?select=*&order=created_at.desc',{headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken}});
+    allVideos=(await r.json())||[];
+    try{
+        var ur=await fetch(SUPABASE_URL+'/auth/v1/users',{headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken}});
+        if(ur.ok){allUsers=(await ur.json())||[]}
+    }catch(e){allUsers=[]}
+    updateStats();
+}
 
-// ВИДЕО
-function loadVideos(){var h='<table><tr><th>Название</th><th>Просмотры</th><th>Лайки</th><th>Действия</th></tr>';allVideos.forEach(v=>{h+=`<tr><td>${v.title}</td><td>${v.views||0}</td><td><button class="btn-sm btn-blue" onclick="addLikesToVideo('${v.id}',100)">+100 ❤️</button></td><td><button class="btn-sm btn-blue" onclick="addViews('${v.id}',1000)">+1K</button><button class="btn-sm btn-red" onclick="deleteVideo('${v.id}')">🗑️</button></td></tr>`});document.getElementById('tabContent').innerHTML=h+'</table>'}
+function updateStats(){
+    var bans=JSON.parse(localStorage.getItem('blutube_bans')||'[]');
+    document.getElementById('statsGrid').innerHTML=
+        '<div class="stat-card"><h3>'+(allUsers.length||'-')+'</h3><p>Пользователей</p></div>'+
+        '<div class="stat-card"><h3>'+allVideos.length+'</h3><p>Видео</p></div>'+
+        '<div class="stat-card"><h3>'+allVideos.reduce((s,x)=>s+(x.views||0),0)+'</h3><p>Просмотров</p></div>'+
+        '<div class="stat-card"><h3>'+bans.length+'</h3><p>Забанено</p></div>';
+}
+
+function showTab(tab){
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+    event.target.classList.add('active');
+    if(tab==='users')loadUsers();
+    else if(tab==='videos')loadVideos();
+    else if(tab==='upload')loadUpload();
+    else if(tab==='bans')loadBans();
+    else if(tab==='comments')loadCommentsMod();
+    else if(tab==='announce')loadAnnounce();
+    else if(tab==='verify')loadVerify();
+    else if(tab==='stats')loadStats();
+}
+
+// === ПОЛЬЗОВАТЕЛИ (ВСЕ из Supabase Auth) ===
+async function loadUsers(){
+    if(!allUsers.length){
+        try{
+            var r=await fetch(SUPABASE_URL+'/auth/v1/users',{headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken}});
+            if(r.ok)allUsers=(await r.json())||[];
+        }catch(e){}
+    }
+    var h='<table><tr><th>Email</th><th>Имя</th><th>Подписчики</th><th>Видео</th><th>Действия</th></tr>';
+    for(var i=0;i<allUsers.length;i++){
+        var u=allUsers[i];
+        var name=u.user_metadata?.name||u.email?.split('@')[0]||'Пользователь';
+        var f=await fetch(SUPABASE_URL+'/rest/v1/follows?select=*&following_id=eq.'+u.id,{headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken,'Prefer':'count=exact'}});
+        var fCount=parseInt(f.headers.get('content-range')?.split('/')[1])||0;
+        var uVids=allVideos.filter(v=>v.artist_id===u.id);
+        var settings=JSON.parse(localStorage.getItem('blutube_users')||'{}')[u.id]||{};
+        var verified=settings.verified||fCount>=100000;
+        h+='<tr><td>'+u.email+'</td><td>'+(verified?'⭐ ':'')+name+'</td><td>'+fCount+'</td><td>'+uVids.length+'</td><td><button class="btn-sm btn-blue" onclick="openEdit(\''+u.id+'\',\''+name+'\','+fCount+')">✏️</button><button class="btn-sm btn-yellow" onclick="openBan(\''+u.id+'\')">🚫</button><button class="btn-sm btn-red" onclick="deleteUserVideos(\''+u.id+'\')">🗑️</button></td></tr>';
+    }
+    document.getElementById('tabContent').innerHTML=h+'</table>'||'<p>Нет пользователей</p>';
+}
+
+// === ВИДЕО ===
+function loadVideos(){
+    var h='<table><tr><th>Название</th><th>Автор</th><th>Просмотры</th><th>Действия</th></tr>';
+    allVideos.forEach(v=>{h+='<tr><td>'+v.title+'</td><td>'+v.artist+'</td><td>'+(v.views||0)+'</td><td><button class="btn-sm btn-blue" onclick="addViews(\''+v.id+'\',1000)">+1K</button><button class="btn-sm btn-blue" onclick="addViews(\''+v.id+'\',10000)">+10K</button><button class="btn-sm btn-green" onclick="addLikesToVideo(\''+v.id+'\',100)">+100❤️</button><button class="btn-sm btn-red" onclick="deleteVideo(\''+v.id+'\')">🗑️</button></td></tr>'});
+    document.getElementById('tabContent').innerHTML=h+'</table>';
+}
 window.addViews=async function(id,c){var v=allVideos.find(x=>x.id===id);await fetch(SUPABASE_URL+'/rest/v1/videos?id=eq.'+id,{method:'PATCH',headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken,'Content-Type':'application/json'},body:JSON.stringify({views:(v?.views||0)+c})});loadData();loadVideos()}
 window.addLikesToVideo=async function(id,c){for(var i=0;i<c;i++){await fetch(SUPABASE_URL+'/rest/v1/likes',{method:'POST',headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken,'Content-Type':'application/json'},body:JSON.stringify({user_id:'00000000-0000-0000-0000-000000000000',video_id:id})}).catch(()=>{})}loadVideos()}
 window.deleteVideo=async function(id){if(confirm('Удалить?')){await fetch(SUPABASE_URL+'/rest/v1/videos?id=eq.'+id,{method:'DELETE',headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken}});loadData();loadVideos()}}
 
-// ЗАГРУЗКА ПО ССЫЛКЕ
-function loadUpload(){document.getElementById('tabContent').innerHTML=`<div style="max-width:500px"><h3>Загрузить по ссылке</h3><label>Название</label><input type="text" id="urlTitle"><label>Ссылка на видео</label><input type="text" id="urlVideo"><label>Ссылка на обложку</label><input type="text" id="urlThumb"><button class="btn-sm btn-green" onclick="uploadByUrl()" style="width:100%;padding:14px;margin-top:16px">Загрузить</button><div id="urlStatus" style="margin-top:12px"></div></div>`}
-window.uploadByUrl=async function(){var title=document.getElementById('urlTitle').value.trim(),vUrl=document.getElementById('urlVideo').value.trim(),tUrl=document.getElementById('urlThumb').value.trim(),st=document.getElementById('urlStatus');if(!title||!vUrl){st.textContent='❌ Введите название и ссылку';return}st.textContent='⏳ Загрузка...';try{var r=await fetch(SUPABASE_URL+'/rest/v1/videos',{method:'POST',headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken,'Content-Type':'application/json'},body:JSON.stringify({title:title,artist:'BluTube',artist_id:currentUser.id,video_url:vUrl,thumbnail_url:tUrl||null,description:'',views:0})});if(r.ok){st.innerHTML='✅ Загружено!<br><small>'+title+'</small>';loadData()}else{var d=await r.json();st.textContent='❌ Ошибка: '+(d.message||'')}}catch(e){st.textContent='❌ '+e.message}}
+// === ЗАГРУЗКА ПО ССЫЛКЕ ===
+function loadUpload(){document.getElementById('tabContent').innerHTML='<div style="max-width:500px"><h3>Загрузить по ссылке</h3><label>Название</label><input type="text" id="urlTitle"><label>Ссылка на видео</label><input type="text" id="urlVideo"><label>Ссылка на обложку</label><input type="text" id="urlThumb"><button class="btn-sm btn-green" onclick="uploadByUrl()" style="width:100%;padding:14px;margin-top:16px">Загрузить</button><div id="urlStatus" style="margin-top:12px"></div></div>'}
+window.uploadByUrl=async function(){var title=document.getElementById('urlTitle').value.trim(),vUrl=document.getElementById('urlVideo').value.trim(),tUrl=document.getElementById('urlThumb').value.trim(),st=document.getElementById('urlStatus');if(!title||!vUrl){st.textContent='❌ Введите название и ссылку';return}st.textContent='⏳ Загрузка...';try{var r=await fetch(SUPABASE_URL+'/rest/v1/videos',{method:'POST',headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken,'Content-Type':'application/json'},body:JSON.stringify({title:title,artist:'BluTube Admin',artist_id:currentUser.id,video_url:vUrl,thumbnail_url:tUrl||null,description:'',views:0})});if(r.ok){st.innerHTML='✅ Загружено!<br><small>'+title+'</small>';loadData()}else{var d=await r.json();st.textContent='❌ Ошибка: '+(d.message||'')}}catch(e){st.textContent='❌ '+e.message}}
 
-// БАНЫ
-function loadBans(){var bans=JSON.parse(localStorage.getItem('blutube_bans')||'[]');var h='<button class="btn-sm btn-yellow" onclick="openBanModal()" style="margin-bottom:16px">🚫 Забанить</button><table><tr><th>ID</th><th>Причина</th><th>Дата</th><th>Действия</th></tr>';bans.forEach((b,i)=>{h+=`<tr><td>${b.id}</td><td>${b.reason}</td><td>${b.date}</td><td><button class="btn-sm btn-green" onclick="unbanUser(${i})">Разбанить</button></td></tr>`});document.getElementById('tabContent').innerHTML=h+'</table>'}
+// === БАНЫ ===
+function loadBans(){var bans=JSON.parse(localStorage.getItem('blutube_bans')||'[]');var h='<button class="btn-sm btn-yellow" onclick="openBanModal()" style="margin-bottom:16px">🚫 Забанить</button><table><tr><th>ID</th><th>Причина</th><th>Дата</th><th>Действия</th></tr>';bans.forEach((b,i)=>{h+='<tr><td>'+b.id+'</td><td>'+b.reason+'</td><td>'+b.date+'</td><td><button class="btn-sm btn-green" onclick="unbanUser('+i+')">Разбанить</button></td></tr>'});document.getElementById('tabContent').innerHTML=h+'</table>'}
 window.openBan=function(id){document.getElementById('banUserId').value=id;document.getElementById('banModal').style.display='flex'}
 window.openBanModal=function(){document.getElementById('banModal').style.display='flex'}
 window.closeBanModal=function(){document.getElementById('banModal').style.display='none'}
 window.banUser=function(){var id=document.getElementById('banUserId').value.trim(),reason=document.getElementById('banReason').value.trim();if(!id)return;var bans=JSON.parse(localStorage.getItem('blutube_bans')||'[]');bans.push({id:id,reason:reason,date:new Date().toLocaleDateString()});localStorage.setItem('blutube_bans',JSON.stringify(bans));closeBanModal();loadBans();updateStats()}
 window.unbanUser=function(i){var bans=JSON.parse(localStorage.getItem('blutube_bans')||'[]');bans.splice(i,1);localStorage.setItem('blutube_bans',JSON.stringify(bans));loadBans();updateStats()}
 
-// МОДЕРАЦИЯ КОММЕНТАРИЕВ
-async function loadCommentsMod(){var r=await fetch(SUPABASE_URL+'/rest/v1/comments?select=*&order=created_at.desc&limit=50',{headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken}});var c=await r.json();var h='<table><tr><th>Текст</th><th>Дата</th><th>Действия</th></tr>';(c||[]).forEach(x=>{h+=`<tr><td>${x.text.substring(0,50)}...</td><td>${new Date(x.created_at).toLocaleDateString()}</td><td><button class="btn-sm btn-red" onclick="deleteComment('${x.id}')">🗑️</button></td></tr>`});document.getElementById('tabContent').innerHTML=h+'</table>'}
+// === МОДЕРАЦИЯ ===
+async function loadCommentsMod(){var r=await fetch(SUPABASE_URL+'/rest/v1/comments?select=*&order=created_at.desc&limit=50',{headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken}});var c=await r.json();var h='<table><tr><th>Текст</th><th>Дата</th><th>Действия</th></tr>';(c||[]).forEach(x=>{h+='<tr><td>'+(x.text||'').substring(0,50)+'</td><td>'+new Date(x.created_at).toLocaleDateString()+'</td><td><button class="btn-sm btn-red" onclick="deleteComment(\''+x.id+'\')">🗑️</button></td></tr>'});document.getElementById('tabContent').innerHTML=h+'</table>'}
 window.deleteComment=async function(id){if(confirm('Удалить?')){await fetch(SUPABASE_URL+'/rest/v1/comments?id=eq.'+id,{method:'DELETE',headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken}});loadCommentsMod()}}
 
-// ОБЪЯВЛЕНИЯ
-function loadAnnounce(){var a=JSON.parse(localStorage.getItem('blutube_announce')||'null');var h='<button class="btn-sm btn-blue" onclick="openAnnounceModal()" style="margin-bottom:16px">📢 Создать</button>';if(a){h+=`<div class="announcement-box" style="border-left:4px solid ${a.color}"><div><b>${a.text}</b><br><small>${a.date}</small></div><button class="btn-sm btn-red" onclick="deleteAnnounce()">🗑️</button></div>`}else{h+='<p style="color:#aaa">Нет объявлений</p>'}document.getElementById('tabContent').innerHTML=h}
+// === ОБЪЯВЛЕНИЯ ===
+function loadAnnounce(){var a=JSON.parse(localStorage.getItem('blutube_announce')||'null');var h='<button class="btn-sm btn-blue" onclick="openAnnounceModal()" style="margin-bottom:16px">📢 Создать</button>';if(a){h+='<div class="announcement-box" style="border-left:4px solid '+a.color+'"><div><b>'+a.text+'</b><br><small>'+a.date+'</small></div><button class="btn-sm btn-red" onclick="deleteAnnounce()">🗑️</button></div>'}else{h+='<p style="color:#aaa">Нет объявлений</p>'}document.getElementById('tabContent').innerHTML=h}
 window.openAnnounceModal=function(){document.getElementById('announceModal').style.display='flex'}
 window.closeAnnounceModal=function(){document.getElementById('announceModal').style.display='none'}
 window.createAnnouncement=function(){var text=document.getElementById('announceText').value.trim(),color=document.getElementById('announceColor').value;if(!text)return;localStorage.setItem('blutube_announce',JSON.stringify({text:text,color:color,date:new Date().toLocaleDateString()}));closeAnnounceModal();loadAnnounce()}
 window.deleteAnnounce=function(){localStorage.removeItem('blutube_announce');loadAnnounce()}
 
-// ВЕРИФИКАЦИЯ
-function loadVerify(){var users=[];allVideos.forEach(v=>{if(!users.find(u=>u.id===v.artist_id))users.push({id:v.artist_id,name:v.artist})});var h='<table><tr><th>Имя</th><th>Статус</th><th>Действия</th></tr>';users.forEach(async u=>{var f=await fetch(SUPABASE_URL+'/rest/v1/follows?select=*&following_id=eq.'+u.id,{headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken,'Prefer':'count=exact'}});var fc=parseInt(f.headers.get('content-range')?.split('/')[1])||0;var s=JSON.parse(localStorage.getItem('blutube_users')||'{}')[u.id]||{};var v=s.verified||fc>=100000;h+=`<tr><td>${u.name}</td><td>${v?'✅':'❌'}</td><td><button class="btn-sm btn-blue" onclick="toggleVerify('${u.id}',${!v})">${v?'Убрать':'Выдать'}</button></td></tr>`});setTimeout(()=>document.getElementById('tabContent').innerHTML=h+'</table>',500)}
+// === ВЕРИФИКАЦИЯ ===
+function loadVerify(){if(!allUsers.length)return;var h='<table><tr><th>Email</th><th>Имя</th><th>Статус</th><th>Действия</th></tr>';allUsers.forEach(async u=>{var f=await fetch(SUPABASE_URL+'/rest/v1/follows?select=*&following_id=eq.'+u.id,{headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken,'Prefer':'count=exact'}});var fc=parseInt(f.headers.get('content-range')?.split('/')[1])||0;var s=JSON.parse(localStorage.getItem('blutube_users')||'{}')[u.id]||{};var v=s.verified||fc>=100000;h+='<tr><td>'+u.email+'</td><td>'+(u.user_metadata?.name||'-')+'</td><td>'+(v?'✅':'❌')+'</td><td><button class="btn-sm btn-blue" onclick="toggleVerify(\''+u.id+'\','+!v+')">'+(v?'Убрать':'Выдать')+'</button></td></tr>'});setTimeout(()=>document.getElementById('tabContent').innerHTML=h+'</table>',500)}
 window.toggleVerify=function(id,status){var s=JSON.parse(localStorage.getItem('blutube_users')||'{}');s[id]=s[id]||{};s[id].verified=status;localStorage.setItem('blutube_users',JSON.stringify(s));loadVerify()}
 
-// СТАТИСТИКА
-function loadStats(){var users=[];allVideos.forEach(v=>{if(!users.find(u=>u.id===v.artist_id))users.push({id:v.artist_id})});var top=allVideos.sort((a,b)=>(b.views||0)-(a.views||0)).slice(0,5);var bans=JSON.parse(localStorage.getItem('blutube_bans')||'[]');document.getElementById('tabContent').innerHTML=`<h3>📊 Топ-5 видео</h3><table><tr><th>Название</th><th>Просмотры</th></tr>${top.map(v=>`<tr><td>${v.title}</td><td>${v.views||0}</td></tr>`).join('')}</table><h3 style="margin-top:24px">📈 Общая статистика</h3><p>Пользователей: ${users.length}</p><p>Видео: ${allVideos.length}</p><p>Просмотров: ${allVideos.reduce((s,x)=>s+(x.views||0),0)}</p><p>Забанено: ${bans.length}</p>`}
+// === СТАТИСТИКА ===
+function loadStats(){var top=allVideos.sort((a,b)=>(b.views||0)-(a.views||0)).slice(0,5);var bans=JSON.parse(localStorage.getItem('blutube_bans')||'[]');document.getElementById('tabContent').innerHTML='<h3>📊 Топ-5 видео</h3><table><tr><th>Название</th><th>Просмотры</th></tr>'+top.map(v=>'<tr><td>'+v.title+'</td><td>'+(v.views||0)+'</td></tr>').join('')+'</table><h3 style="margin-top:24px">📈 Общая статистика</h3><p>Пользователей: '+(allUsers.length||'-')+'</p><p>Видео: '+allVideos.length+'</p><p>Просмотров: '+allVideos.reduce((s,x)=>s+(x.views||0),0)+'</p><p>Забанено: '+bans.length+'</p>'}
 
-// ОБЩЕЕ
+// === ОБЩИЕ ===
+window.openEdit=function(id,name,fc){document.getElementById('editId').value=id;document.getElementById('editName').value=name;document.getElementById('addFollowers').value=0;document.getElementById('editModal').style.display='flex'}
 window.closeModal=function(){document.getElementById('editModal').style.display='none'}
+window.saveEdit=async function(){var id=document.getElementById('editId').value,name=document.getElementById('editName').value,addF=parseInt(document.getElementById('addFollowers').value)||0;for(var i=0;i<addF;i++){await fetch(SUPABASE_URL+'/rest/v1/follows',{method:'POST',headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken,'Content-Type':'application/json'},body:JSON.stringify({follower_id:'00000000-0000-0000-0000-000000000000',following_id:id})}).catch(()=>{})}var uVids=allVideos.filter(v=>v.artist_id===id);for(var j=0;j<uVids.length;j++){await fetch(SUPABASE_URL+'/rest/v1/videos?id=eq.'+uVids[j].id,{method:'PATCH',headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken,'Content-Type':'application/json'},body:JSON.stringify({artist:name})})}closeModal();loadData();loadUsers()}
+window.deleteUserVideos=async function(id){if(confirm('Удалить все видео?')){for(var v of allVideos.filter(v=>v.artist_id===id)){await fetch(SUPABASE_URL+'/rest/v1/videos?id=eq.'+v.id,{method:'DELETE',headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken}})}loadData();loadUsers()}}
 </script>
 </body>
-</html>
+                                                                                                                                                                                                                                                                                                                      </html>
