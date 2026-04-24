@@ -11,13 +11,11 @@
         .logo{display:flex;align-items:center;justify-content:center;gap:8px;font-size:28px;font-weight:700;margin-bottom:30px;color:#f00}
         .logo i{font-size:32px}h2{text-align:center;margin-bottom:25px;color:#fff}
         .input-group{background:#272727;border-radius:8px;padding:0 15px;display:flex;align-items:center;margin-bottom:15px;border:1px solid #3e3e3e}
-        .input-group i{color:#aaa;margin-right:12px}
-        .input-group input{background:transparent;border:none;padding:16px 0;color:#fff;font-size:16px;width:100%;outline:none}
+        .input-group i{color:#aaa;margin-right:12px}.input-group input{background:transparent;border:none;padding:16px 0;color:#fff;font-size:16px;width:100%;outline:none}
         .btn{background:#f00;color:#fff;font-weight:700;padding:14px;border:none;border-radius:30px;width:100%;cursor:pointer;margin-top:10px}
         .btn:disabled{opacity:0.5}
         .error{color:#f00;font-size:14px;text-align:center;margin-top:10px;min-height:20px}
         .link{text-align:center;margin-top:20px;color:#aaa}.link a{color:#f00;text-decoration:none}
-        .debug{background:#111;padding:10px;border-radius:8px;margin-top:20px;font-size:12px;color:#0f0;word-break:break-all;max-height:100px;overflow-y:auto}
     </style>
 </head>
 <body>
@@ -33,28 +31,22 @@
     
     <div class="error" id="error"></div>
     <p class="link">Уже есть аккаунт? <a href="login.html">Войти</a></p>
-    <div class="debug" id="debug">Ожидание...</div>
 </div>
 
 <script>
 const SUPABASE_URL='https://axocsccfyyrtcegxvwal.supabase.co';
 const SUPABASE_ANON_KEY='sb_publishable_Jga_s88V7TAEUSvHIFkMvA_DT5vG44E';
 
-const debugEl=document.getElementById('debug');
-function log(msg){debugEl.innerHTML=msg;console.log(msg)}
-
-log('Страница загружена');
-
 // Проверяем, есть ли уже токен
-const saved=localStorage.getItem('supabase_token');
-if(saved){log('Токен найден, перехожу...');window.location.href='main.html'}
+var saved=localStorage.getItem('supabase_token');
+if(saved){window.location.href='main.html'}
 
 window.doRegister=async function(){
-    const name=document.getElementById('name').value.trim();
-    const email=document.getElementById('email').value.trim();
-    const password=document.getElementById('password').value;
-    const err=document.getElementById('error');
-    const btn=document.getElementById('regBtn');
+    var name=document.getElementById('name').value.trim();
+    var email=document.getElementById('email').value.trim();
+    var password=document.getElementById('password').value;
+    var err=document.getElementById('error');
+    var btn=document.getElementById('regBtn');
     
     if(!name||!email||!password){err.textContent='Заполните все поля';return}
     if(password.length<6){err.textContent='Пароль не менее 6 символов';return}
@@ -63,35 +55,35 @@ window.doRegister=async function(){
     btn.textContent='Регистрация...';
     err.textContent='';
     
-    log('Отправка запроса...');
-    
     try{
-        const response=await fetch(SUPABASE_URL+'/auth/v1/signup',{
+        // Шаг 1: Регистрируем
+        var response=await fetch(SUPABASE_URL+'/auth/v1/signup',{
             method:'POST',
-            headers:{
-                'Content-Type':'application/json',
-                'apikey':SUPABASE_ANON_KEY
-            },
-            body:JSON.stringify({
-                email,password,
-                data:{name,avatar_url:'https://i.pravatar.cc/150?u='+email}
-            })
+            headers:{'Content-Type':'application/json','apikey':SUPABASE_ANON_KEY},
+            body:JSON.stringify({email:email,password:password,data:{name:name,avatar_url:'https://i.pravatar.cc/150?u='+email}})
         });
+        var data=await response.json();
         
-        const data=await response.json();
-        log('Ответ: '+JSON.stringify(data));
+        if(!response.ok){throw new Error(data.msg||'Ошибка регистрации')}
         
-        if(!response.ok){
-            throw new Error(data.msg||'Ошибка регистрации');
-        }
+        // Шаг 2: Сразу входим
+        var loginResponse=await fetch(SUPABASE_URL+'/auth/v1/token?grant_type=password',{
+            method:'POST',
+            headers:{'Content-Type':'application/json','apikey':SUPABASE_ANON_KEY},
+            body:JSON.stringify({email:email,password:password})
+        });
+        var loginData=await loginResponse.json();
         
-        if(data.id){
+        if(loginData.access_token){
+            localStorage.setItem('supabase_token',loginData.access_token);
+            localStorage.setItem('supabase_user',JSON.stringify(loginData.user));
+            window.location.href='main.html';
+        }else{
             alert('Регистрация успешна! Теперь войдите.');
             window.location.href='login.html';
         }
         
     }catch(er){
-        log('❌ '+er.message);
         err.textContent=er.message;
         btn.disabled=false;
         btn.textContent='Зарегистрироваться';
