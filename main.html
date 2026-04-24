@@ -9,42 +9,40 @@
         *{margin:0;padding:0;box-sizing:border-box;font-family:Roboto,Arial,sans-serif}
         body{background:#0f0f0f;color:#fff;height:100vh;overflow:hidden}
         #app{display:none;height:100vh;flex-direction:column}
-        .header{display:flex;align-items:center;justify-content:space-between;padding:0 24px;height:56px;background:#0f0f0f;border-bottom:1px solid #272727}
-        .header-left{display:flex;align-items:center;gap:16px}
-        .logo{display:flex;align-items:center;gap:4px;font-size:20px;font-weight:700;color:#3b82f6;cursor:pointer}
-        .logo i{font-size:24px;background:#3b82f6;color:#fff;padding:6px;border-radius:6px}
-        .search-bar{display:flex;align-items:center;flex:1;max-width:600px;margin:0 24px}
-        .search-bar input{flex:1;padding:8px 16px;background:#121212;border:1px solid #303030;color:#fff;border-radius:20px 0 0 20px;outline:none;font-size:16px}
-        .search-bar button{padding:8px 20px;background:#272727;border:1px solid #303030;color:#fff;border-radius:0 20px 20px 0;cursor:pointer}
-        .header-right{display:flex;align-items:center;gap:8px}
+        .header{display:flex;align-items:center;justify-content:space-between;padding:0 16px;height:56px;background:#0f0f0f;border-bottom:1px solid #272727}
+        .header-left{display:flex;align-items:center;gap:12px}
+        .logo{display:flex;align-items:center;gap:6px;font-size:20px;font-weight:700;color:#3b82f6;cursor:pointer}
+        .logo i{font-size:22px;background:#3b82f6;color:#fff;padding:6px;border-radius:6px}
+        .search-bar{display:flex;align-items:center;flex:1;max-width:500px;margin:0 16px}
+        .search-bar input{flex:1;padding:8px 14px;background:#121212;border:1px solid #303030;color:#fff;border-radius:20px 0 0 20px;outline:none;font-size:15px}
+        .search-bar button{padding:8px 16px;background:#272727;border:1px solid #303030;color:#fff;border-radius:0 20px 20px 0;cursor:pointer}
+        .header-right{display:flex;align-items:center;gap:6px}
         .icon-btn{background:none;border:none;color:#fff;font-size:20px;cursor:pointer;width:40px;height:40px;display:flex;align-items:center;justify-content:center;border-radius:50%}
         .icon-btn:hover{background:#272727}
         .user-btn{display:flex;align-items:center;cursor:pointer;position:relative}
         .user-btn img{width:32px;height:32px;border-radius:50%}
         .dropdown{position:absolute;right:0;top:40px;background:#1a1a1a;border-radius:8px;padding:8px 0;min-width:200px;display:none;z-index:100;box-shadow:0 8px 24px rgba(0,0,0,0.5)}
         .dropdown.show{display:block}
-        .dropdown a{display:flex;align-items:center;gap:16px;padding:12px 16px;color:#fff;text-decoration:none}
+        .dropdown a{display:flex;align-items:center;gap:14px;padding:12px 16px;color:#fff;text-decoration:none}
         .dropdown a:hover{background:#272727}
         .main-content{display:flex;flex:1;overflow:hidden}
-        .sidebar{width:72px;background:#0f0f0f;padding:12px 0;display:flex;flex-direction:column;align-items:center;gap:20px;border-right:1px solid #272727}
+        .sidebar{width:72px;background:#0f0f0f;padding:12px 0;display:flex;flex-direction:column;align-items:center;gap:16px;border-right:1px solid #272727}
         .sidebar-item{display:flex;flex-direction:column;align-items:center;gap:4px;color:#aaa;font-size:10px;cursor:pointer;padding:8px;border-radius:8px;width:64px;text-align:center}
         .sidebar-item:hover{background:#272727;color:#fff}
         .sidebar-item i{font-size:20px}
         .sidebar-item.active{color:#fff;background:#272727}
-        .content{flex:1;overflow-y:auto;padding:24px}
-        .video-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:20px}
+        .content{flex:1;overflow-y:auto;padding:20px}
+        .video-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:20px}
         @media(max-width:768px){.video-grid{grid-template-columns:1fr}}
         .video-card{cursor:pointer}
         .thumb-wrap{position:relative;width:100%;aspect-ratio:16/9;background:#272727;border-radius:12px;overflow:hidden}
         .thumb-wrap video,.thumb-wrap img{width:100%;height:100%;object-fit:cover}
-        .video-info{display:flex;gap:12px;padding:12px 0}
+        .video-info{display:flex;gap:12px;padding:10px 0}
         .channel-avatar{width:36px;height:36px;border-radius:50%;object-fit:cover;cursor:pointer}
-        .video-details h3{font-size:16px;margin-bottom:4px}
-        .video-details p{font-size:14px;color:#aaa}
-        .verified{color:#aaa;font-size:12px;margin-left:4px}
-        .verified.yes{color:#1db954}
-        .watch-page{display:none;padding:24px;flex:1;overflow-y:auto}
-        .watch-page.active{display:flex;gap:24px}
+        .video-details h3{font-size:15px;margin-bottom:3px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+        .video-details p{font-size:13px;color:#aaa}
+        .watch-page{display:none;padding:20px;flex:1;overflow-y:auto}
+        .watch-page.active{display:flex;gap:20px}
         .watch-main{flex:1;max-width:900px}
         .watch-video{width:100%;aspect-ratio:16/9;background:#000;border-radius:12px}
         .watch-title{font-size:20px;font-weight:700;margin:12px 0 8px}
@@ -58,7 +56,7 @@
         .like-buttons button{background:none;border:none;color:#fff;padding:8px 16px;cursor:pointer;display:flex;align-items:center;gap:6px;font-size:14px}
         .like-buttons button:hover{background:#3e3e3e}
         .like-buttons .divider{width:1px;height:24px;background:#3e3e3e}
-        .watch-desc{background:#272727;padding:12px;border-radius:12px;margin:16px 0;font-size:14px}
+        .watch-desc{background:#272727;padding:12px;border-radius:12px;margin:16px 0;font-size:14px;white-space:pre-wrap}
         .comments-section{margin-top:24px}
         .comments-section h3{margin-bottom:16px}
         .comment-input{display:flex;gap:12px;margin-bottom:24px}
@@ -67,290 +65,32 @@
         .comment{display:flex;gap:12px;margin-bottom:16px}
         .comment img{width:40px;height:40px;border-radius:50%}
         .comment-body h4{font-size:14px;margin-bottom:4px}
-        .comment-body h4 span{font-size:12px;color:#aaa;font-weight:400;margin-left:8px}
+        .comment-body h4 span{font-size:12px;color:#aaa;margin-left:8px}
         .comment-body p{font-size:14px}
-        .watch-sidebar{width:400px;display:flex;flex-direction:column;gap:12px}
+        .watch-sidebar{width:380px;display:flex;flex-direction:column;gap:12px}
         @media(max-width:768px){.watch-sidebar{display:none}}
-        .page{display:none}.page.active{display:block}
+        .page{display:none}
+        .page.active{display:block}
         .modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);align-items:center;justify-content:center;z-index:1000}
-        .modal-content{background:#1a1a1a;padding:30px;border-radius:12px;width:90%;max-width:500px;max-height:80vh;overflow-y:auto}
-        .modal-content h2{margin-bottom:20px}
-        .modal-content input,.modal-content textarea,.modal-content select{width:100%;padding:12px;margin-bottom:16px;background:#272727;border:1px solid #3e3e3e;color:#fff;border-radius:8px;font-size:14px}
-        .modal-content textarea{height:80px;resize:vertical}
-        .modal-content label{color:#aaa;margin-bottom:8px;display:block}
-        .modal-buttons{display:flex;gap:12px}
+        .modal-content{background:#1a1a1a;padding:24px;border-radius:12px;width:90%;max-width:500px;max-height:80vh;overflow-y:auto}
+        .modal-content h2{margin-bottom:16px}
+        .modal-content input,.modal-content textarea{width:100%;padding:12px;margin-bottom:14px;background:#272727;border:1px solid #3e3e3e;color:#fff;border-radius:8px;font-size:14px}
+        .modal-content textarea{height:70px;resize:vertical}
+        .modal-content label{color:#aaa;margin-bottom:6px;display:block}
+        .modal-buttons{display:flex;gap:10px}
         .btn-primary{flex:1;padding:12px;background:#3b82f6;border:none;border-radius:20px;color:#fff;font-weight:700;cursor:pointer}
         .btn-primary:disabled{opacity:0.5}
         .btn-secondary{flex:1;padding:12px;background:#272727;border:none;border-radius:20px;color:#fff;cursor:pointer}
-        .btn-small{padding:6px 12px;background:#3b82f6;border:none;border-radius:15px;color:#fff;cursor:pointer;font-size:12px;margin:2px}
-        .upload-progress{margin:16px 0;display:none}
+        .upload-progress{margin:14px 0;display:none}
         .upload-bar{height:4px;background:#3e3e3e;border-radius:2px}
         .upload-fill{height:100%;background:#3b82f6;width:0%;border-radius:2px}
-        .empty-state{text-align:center;padding:60px;color:#aaa}
-        .empty-state i{font-size:48px;margin-bottom:16px;opacity:0.5}
+        .empty-state{text-align:center;padding:50px;color:#aaa}
+        .empty-state i{font-size:48px;margin-bottom:14px;opacity:0.5}
         #loading{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh}
-        .spinner{width:48px;height:48px;border:3px solid #272727;border-top-color:#3b82f6;border-radius:50%;animation:spin 1s linear infinite;margin-bottom:16px}
+        .spinner{width:48px;height:48px;border:3px solid #272727;border-top-color:#3b82f6;border-radius:50%;animation:spin 1s linear infinite;margin-bottom:14px}
         @keyframes spin{to{transform:rotate(360deg)}}
     </style>
 </head>
 <body>
 <div id="loading"><div class="spinner"></div><span>Загрузка BluTube...</span></div>
 <div id="app">
-    <header class="header">
-        <div class="header-left"><div class="logo" onclick="showPage('home')"><i class="fas fa-play"></i> BluTube</div></div>
-        <div class="search-bar"><input type="text" id="searchInput" placeholder="Поиск..."><button onclick="searchVideos()"><i class="fas fa-search"></i></button></div>
-        <div class="header-right">
-            <button class="icon-btn" id="uploadBtn"><i class="fas fa-video"></i></button>
-            <div class="user-btn" id="userMenuBtn"><img id="headerAvatar" src="https://i.pravatar.cc/32?img=7"></div>
-            <div class="dropdown" id="userDropdown">
-                <a href="profile.html"><i class="fas fa-user"></i> Мой канал</a>
-                <a href="#" id="adminPanelBtn" style="display:none"><i class="fas fa-shield"></i> Админ-панель</a>
-                <a href="#" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Выйти</a>
-            </div>
-        </div>
-    </header>
-    <div class="main-content">
-        <div class="sidebar">
-            <div class="sidebar-item active" onclick="showPage('home')"><i class="fas fa-home"></i>Главная</div>
-            <div class="sidebar-item" onclick="showPage('trending')"><i class="fas fa-fire"></i>Тренды</div>
-            <div class="sidebar-item" onclick="showPage('subscriptions')"><i class="fas fa-play"></i>Подписки</div>
-            <div class="sidebar-item" onclick="showPage('liked')"><i class="fas fa-heart"></i>Лайки</div>
-        </div>
-        <div class="content">
-            <div id="home-page" class="page active"><div class="video-grid" id="videoGrid"></div></div>
-            <div id="trending-page" class="page"><h1>Тренды</h1><div class="video-grid" id="trendingGrid"></div></div>
-            <div id="subscriptions-page" class="page"><h1>Подписки</h1><div class="video-grid" id="subsGrid"></div></div>
-            <div id="liked-page" class="page"><h1>Понравившиеся</h1><div class="video-grid" id="likedGrid"></div></div>
-            <div class="watch-page" id="watchPage">
-                <div class="watch-main">
-                    <video class="watch-video" id="watchVideo" controls></video>
-                    <div class="watch-title" id="watchTitle"></div>
-                    <div class="watch-info">
-                        <div class="channel-info" id="watchChannelInfo">
-                            <img id="watchChannelAvatar"><div><h4 id="watchChannelName"></h4><p id="watchSubsCount" style="font-size:12px;color:#aaa"></p></div>
-                            <button class="subscribe-btn sub" id="watchSubscribeBtn">Подписаться</button>
-                        </div>
-                        <div class="like-buttons">
-                            <button id="watchLikeBtn"><i class="far fa-thumbs-up"></i> <span id="watchLikes">0</span></button>
-                            <div class="divider"></div>
-                            <button id="watchDislikeBtn"><i class="far fa-thumbs-down"></i></button>
-                        </div>
-                    </div>
-                    <div class="watch-desc" id="watchDesc"></div>
-                    <div class="comments-section">
-                        <h3 id="commentsCount">Комментарии</h3>
-                        <div class="comment-input"><img id="commentAvatar" src="https://i.pravatar.cc/40?img=7"><input type="text" id="commentInput" placeholder="Оставить комментарий..."><button class="icon-btn" onclick="addComment()"><i class="fas fa-paper-plane"></i></button></div>
-                        <div id="commentsList"></div>
-                    </div>
-                </div>
-                <div class="watch-sidebar" id="watchSidebar"></div>
-            </div>
-        </div>
-    </div>
-</div>
-    <div class="modal" id="uploadModal"><div class="modal-content"><h2><i class="fas fa-video" style="color:#3b82f6"></i> Загрузить видео</h2><label>Название</label><input id="uploadTitle" placeholder="Название видео"><label>Описание</label><textarea id="uploadDesc" placeholder="Описание видео"></textarea><label>Видео файл</label><input type="file" id="uploadVideoFile" accept="video/*"><label>Обложка</label><input type="file" id="uploadThumbFile" accept="image/*"><div class="upload-progress" id="uploadProgress"><div class="upload-bar"><div class="upload-fill" id="uploadFill"></div></div><span id="uploadPercent">0%</span></div><div class="modal-buttons"><button class="btn-primary" id="confirmUpload">Загрузить</button><button class="btn-secondary" id="cancelUpload">Отмена</button></div></div></div>
-
-<div class="modal" id="adminModal"><div class="modal-content" style="max-width:900px"><h2><i class="fas fa-shield"></i> Админ-панель</h2><div style="display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap"><button class="btn-small" onclick="loadAdminUsers()">Пользователи</button><button class="btn-small" onclick="loadAdminVideos()">Видео</button></div><div id="adminContent"></div><button class="btn-secondary" onclick="closeAdmin()">Закрыть</button></div></div>
-
-<div class="modal" id="editUserModal"><div class="modal-content"><h2>Редактировать пользователя</h2><input type="hidden" id="editUserId"><label>Имя</label><input id="editUserName" placeholder="Имя"><label>Подписчики</label><input type="number" id="editUserFollowers" placeholder="Количество"><label>Просмотры (на все видео)</label><input type="number" id="editUserViews" placeholder="Количество"><label>Верификация</label><select id="editUserVerified"><option value="false">Нет</option><option value="true">Да (галочка)</option></select><div class="modal-buttons"><button class="btn-primary" onclick="saveUserEdit()">Сохранить</button><button class="btn-secondary" onclick="closeEditUser()">Отмена</button></div></div></div>
-    <script>
-const SUPABASE_URL='https://axocsccfyyrtcegxvwal.supabase.co';
-const SUPABASE_ANON_KEY='sb_publishable_Jga_s88V7TAEUSvHIFkMvA_DT5vG44E';
-let currentUser=null,accessToken=null,currentVideo=null,allVideos=[];
-const ADMIN_EMAIL='radmirnoros@gmail.com';
-const VERIFY_SUBS=100000;
-
-async function init(){
-    var t=localStorage.getItem('supabase_token'),u=localStorage.getItem('supabase_user');
-    if(!t||!u){window.location.href='login.html';return}
-    accessToken=t;try{currentUser=JSON.parse(u);}catch(e){localStorage.clear();window.location.href='login.html';return}
-    document.getElementById('loading').style.display='none';document.getElementById('app').style.display='flex';
-    if(currentUser.email===ADMIN_EMAIL)document.getElementById('adminPanelBtn').style.display='flex';
-    document.getElementById('headerAvatar').src=currentUser.user_metadata?.avatar_url||'https://i.pravatar.cc/32?img=7';
-    document.getElementById('commentAvatar').src=currentUser.user_metadata?.avatar_url||'https://i.pravatar.cc/40?img=7';
-    setupEvents();await loadAllVideos();
-}
-init();
-
-async function loadAllVideos(){
-    try{var r=await fetch(SUPABASE_URL+'/rest/v1/videos?select=*&order=created_at.desc',{headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken}});var data=await r.json();allVideos=Array.isArray(data)?data:[];}catch(e){allVideos=[]}
-    renderVideoGrid(allVideos,'videoGrid');renderVideoGrid(allVideos,'trendingGrid');
-    try{var l=await fetch(SUPABASE_URL+'/rest/v1/likes?select=video_id&user_id=eq.'+currentUser.id,{headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken}});var lData=await l.json();var likedIds=Array.isArray(lData)?lData.map(function(x){return x.video_id}):[];renderVideoGrid(allVideos.filter(function(v){return likedIds.includes(v.id)}),'likedGrid');}catch(e){}
-    try{var f=await fetch(SUPABASE_URL+'/rest/v1/follows?select=following_id&follower_id=eq.'+currentUser.id,{headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken}});var fData=await f.json();var followingIds=Array.isArray(fData)?fData.map(function(x){return x.following_id}):[];renderVideoGrid(allVideos.filter(function(v){return followingIds.includes(v.artist_id)}),'subsGrid');}catch(e){}
-}
-
-function renderVideoGrid(videos,containerId){
-    var g=document.getElementById(containerId);if(!g)return;
-    if(!videos||!videos.length){g.innerHTML='<div class="empty-state"><i class="fas fa-video"></i><p>Нет видео</p></div>';return}
-    g.innerHTML=videos.map(function(v){return '<div class="video-card" onclick="watchVideo(\''+v.id+'\')"><div class="thumb-wrap">'+(v.thumbnail_url?'<img src="'+v.thumbnail_url+'">':'<video src="'+v.video_url+'" muted preload="metadata"></video>')+'</div><div class="video-info"><img class="channel-avatar" src="https://i.pravatar.cc/36?u='+v.artist_id+'" onclick="event.stopPropagation();window.location.href=\'profile.html?id='+v.artist_id+'\'"><div class="video-details"><h3>'+v.title+'</h3><p>'+v.artist+' • '+(v.views||0)+' просмотров</p></div></div></div>'}).join('');
-}
-
-async function watchVideo(id){
-    var v=allVideos.find(function(x){return x.id==id});if(!v)return;currentVideo=v;
-    showWatchPage();
-    document.getElementById('watchVideo').src=currentVideo.video_url;
-    document.getElementById('watchTitle').textContent=currentVideo.title;
-    document.getElementById('watchChannelName').textContent=currentVideo.artist;
-    document.getElementById('watchChannelAvatar').src='https://i.pravatar.cc/40?u='+currentVideo.artist_id;
-    document.getElementById('watchDesc').textContent=currentVideo.description||'Нет описания';
-    await updateWatchStats();await loadComments();await loadSidebarVideos();
-    fetch(SUPABASE_URL+'/rest/v1/videos?id=eq.'+currentVideo.id,{method:'PATCH',headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken,'Content-Type':'application/json'},body:JSON.stringify({views:(currentVideo.views||0)+1})});
-}
-
-function showWatchPage(){
-    document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active')});
-    document.getElementById('watchPage').classList.add('active');document.getElementById('watchPage').style.display='flex';
-}
-
-async function updateWatchStats(){
-    var l=await fetch(SUPABASE_URL+'/rest/v1/likes?select=*&video_id=eq.'+currentVideo.id,{headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken,'Prefer':'count=exact'}});
-    document.getElementById('watchLikes').textContent=parseInt(l.headers.get('content-range')?.split('/')[1])||0;
-    var liked=await fetch(SUPABASE_URL+'/rest/v1/likes?select=*&user_id=eq.'+currentUser.id+'&video_id=eq.'+currentVideo.id,{headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken}});
-    document.getElementById('watchLikeBtn').querySelector('i').className=(await liked.json()).length?'fas fa-thumbs-up':'far fa-thumbs-up';
-    var f=await fetch(SUPABASE_URL+'/rest/v1/follows?select=*&follower_id=eq.'+currentUser.id+'&following_id=eq.'+currentVideo.artist_id,{headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken}});
-    var isF=(await f.json()).length>0;var sb=document.getElementById('watchSubscribeBtn');sb.textContent=isF?'Вы подписаны':'Подписаться';sb.className='subscribe-btn '+(isF?'unsub':'sub');
-}
-
-async function loadComments(){
-    var r=await fetch(SUPABASE_URL+'/rest/v1/comments?select=*&video_id=eq.'+currentVideo.id+'&order=created_at.desc',{headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken}});
-    var c=await r.json();document.getElementById('commentsCount').textContent='Комментарии ('+c.length+')';
-    document.getElementById('commentsList').innerHTML=c.map(function(c){return '<div class="comment"><img src="https://i.pravatar.cc/40?u='+c.user_id+'"><div class="comment-body"><h4>Пользователь <span>'+new Date(c.created_at).toLocaleDateString()+'</span></h4><p>'+c.text+'</p></div></div>'}).join('');
-}
-
-async function addComment(){
-    var text=document.getElementById('commentInput').value.trim();if(!text)return;
-    await fetch(SUPABASE_URL+'/rest/v1/comments',{method:'POST',headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken,'Content-Type':'application/json'},body:JSON.stringify({user_id:currentUser.id,video_id:currentVideo.id,text:text})});
-    document.getElementById('commentInput').value='';loadComments();
-}
-
-async function loadSidebarVideos(){document.getElementById('watchSidebar').innerHTML=allVideos.filter(function(x){return x.id!==(currentVideo?.id)}).slice(0,10).map(function(v){return '<div class="video-card" onclick="watchVideo(\''+v.id+'\')"><div class="thumb-wrap">'+(v.thumbnail_url?'<img src="'+v.thumbnail_url+'">':'<video src="'+v.video_url+'" muted preload="metadata"></video>')+'</div><div class="video-details"><h3>'+v.title+'</h3><p>'+v.artist+' • '+(v.views||0)+' просмотров</p></div></div>'}).join('')}
-
-function showPage(page){
-    document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active')});
-    document.getElementById('watchPage').style.display='none';document.getElementById('watchPage').classList.remove('active');
-    var el=document.getElementById(page);if(el)el.classList.add('active');
-        } function setupEvents(){
-    document.getElementById('userMenuBtn').addEventListener('click',function(e){e.stopPropagation();document.getElementById('userDropdown').classList.toggle('show')});
-    document.addEventListener('click',function(){document.getElementById('userDropdown').classList.remove('show')});
-    document.getElementById('logoutBtn').addEventListener('click',function(e){e.preventDefault();localStorage.clear();window.location.href='login.html'});
-    document.getElementById('watchLikeBtn').addEventListener('click',async function(){if(!currentVideo)return;var l=await fetch(SUPABASE_URL+'/rest/v1/likes?select=*&user_id=eq.'+currentUser.id+'&video_id=eq.'+currentVideo.id,{headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken}});var d=await l.json();if(d.length){await fetch(SUPABASE_URL+'/rest/v1/likes?user_id=eq.'+currentUser.id+'&video_id=eq.'+currentVideo.id,{method:'DELETE',headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken}})}else{await fetch(SUPABASE_URL+'/rest/v1/likes',{method:'POST',headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken,'Content-Type':'application/json'},body:JSON.stringify({user_id:currentUser.id,video_id:currentVideo.id})})}updateWatchStats()});
-    document.getElementById('watchSubscribeBtn').addEventListener('click',async function(){if(!currentVideo)return;var f=await fetch(SUPABASE_URL+'/rest/v1/follows?select=*&follower_id=eq.'+currentUser.id+'&following_id=eq.'+currentVideo.artist_id,{headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken}});var d=await f.json();if(d.length){await fetch(SUPABASE_URL+'/rest/v1/follows?follower_id=eq.'+currentUser.id+'&following_id=eq.'+currentVideo.artist_id,{method:'DELETE',headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken}})}else{await fetch(SUPABASE_URL+'/rest/v1/follows',{method:'POST',headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken,'Content-Type':'application/json'},body:JSON.stringify({follower_id:currentUser.id,following_id:currentVideo.artist_id})})}updateWatchStats()});
-    
-    var uploadModal=document.getElementById('uploadModal');
-    document.getElementById('uploadBtn').addEventListener('click',function(){uploadModal.style.display='flex'});
-    document.getElementById('cancelUpload').addEventListener('click',function(){uploadModal.style.display='none';resetUpload()});
-    document.getElementById('confirmUpload').addEventListener('click',async function(){
-        var title=document.getElementById('uploadTitle').value,vf=document.getElementById('uploadVideoFile').files[0],tf=document.getElementById('uploadThumbFile').files[0],desc=document.getElementById('uploadDesc').value;
-        if(!title||!vf){alert('Введите название и выберите видео');return}
-        var btn=document.getElementById('confirmUpload');btn.disabled=true;btn.textContent='Загрузка...';var progress=document.getElementById('uploadProgress');progress.style.display='block';
-        try{
-            var artist=currentUser.user_metadata?.name||currentUser.email?.split('@')[0];var fd=new FormData();fd.append('file',vf);
-            var fn='videos/'+currentUser.id+'/'+Date.now()+'_'+vf.name.replace(/[^a-zA-Z0-9.]/g,'_');
-            await fetch(SUPABASE_URL+'/storage/v1/object/music/'+fn,{method:'POST',headers:{'Authorization':'Bearer '+accessToken,'apikey':SUPABASE_ANON_KEY},body:fd});
-            document.getElementById('uploadFill').style.width='50%';document.getElementById('uploadPercent').textContent='50%';
-            var vUrl=SUPABASE_URL+'/storage/v1/object/public/music/'+fn;var tUrl=null;
-            if(tf){var tfd=new FormData();tfd.append('file',tf);var tfn='thumbs/'+currentUser.id+'/'+Date.now()+'_'+tf.name.replace(/[^a-zA-Z0-9.]/g,'_');await fetch(SUPABASE_URL+'/storage/v1/object/music/'+tfn,{method:'POST',headers:{'Authorization':'Bearer '+accessToken,'apikey':SUPABASE_ANON_KEY},body:tfd});tUrl=SUPABASE_URL+'/storage/v1/object/public/music/'+tfn}
-            document.getElementById('uploadFill').style.width='80%';document.getElementById('uploadPercent').textContent='80%';
-            var res=await fetch(SUPABASE_URL+'/rest/v1/videos',{method:'POST',headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken,'Content-Type':'application/json','Prefer':'return=representation'},body:JSON.stringify({title:title,artist:artist,artist_id:currentUser.id,video_url:vUrl,thumbnail_url:tUrl,description:desc,views:0})});
-            var newVideo=await res.json();document.getElementById('uploadFill').style.width='100%';document.getElementById('uploadPercent').textContent='100%';
-            if(Array.isArray(newVideo)){allVideos=[newVideo[0]].concat(allVideos)}else if(newVideo){allVideos=[newVideo].concat(allVideos)}
-            setTimeout(function(){uploadModal.style.display='none';resetUpload();renderVideoGrid(allVideos,'videoGrid');renderVideoGrid(allVideos,'trendingGrid')},500);
-        }catch(e){alert('Ошибка: '+e.message)}finally{btn.disabled=false;btn.textContent='Загрузить'}
-    });
-    function resetUpload(){document.getElementById('uploadTitle').value='';document.getElementById('uploadDesc').value='';document.getElementById('uploadVideoFile').value='';document.getElementById('uploadThumbFile').value='';document.getElementById('uploadProgress').style.display='none';document.getElementById('uploadFill').style.width='0%'}
-    document.getElementById('adminPanelBtn')?.addEventListener('click',function(){document.getElementById('adminModal').style.display='flex';loadAdminUsers()});
-}
-
-// ИСПРАВЛЕННАЯ ФУНКЦИЯ ЗАГРУЗКИ ПОЛЬЗОВАТЕЛЕЙ
-async function loadAdminUsers(){
-    // Получаем уникальных авторов из видео
-    var uniqueAuthors=[];
-    var seen={};
-    for(var i=0;i<allVideos.length;i++){
-        var v=allVideos[i];
-        if(!seen[v.artist_id]){
-            seen[v.artist_id]=true;
-            uniqueAuthors.push({id:v.artist_id,name:v.artist,email:'-'});
-        }
-    }
-    
-    var h='<table style="width:100%;border-collapse:collapse;font-size:13px"><tr><th>ID</th><th>Имя</th><th>Подписчики</th><th>Видео</th><th>Вериф.</th><th>Действия</th></tr>';
-    for(var j=0;j<uniqueAuthors.length;j++){
-        var u=uniqueAuthors[j];
-        // Считаем подписчиков
-        var f=await fetch(SUPABASE_URL+'/rest/v1/follows?select=*&following_id=eq.'+u.id,{headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken,'Prefer':'count=exact'}});
-        var fCount=parseInt(f.headers.get('content-range')?.split('/')[1])||0;
-        // Считаем видео
-        var userVideos=allVideos.filter(function(x){return x.artist_id===u.id});
-        var verified=fCount>=VERIFY_SUBS;
-        h+='<tr><td>'+u.id.substring(0,8)+'...</td><td>'+u.name+'</td><td>'+fCount+'</td><td>'+userVideos.length+'</td><td>'+(verified?'✅':'❌')+'</td><td><button class="btn-small" onclick="openEditUser(\''+u.id+'\',\''+u.name+'\','+fCount+')">✏️</button><button class="btn-small" onclick="deleteUserVideos(\''+u.id+'\')">🗑️</button></td></tr>';
-    }
-    h+='</table>';
-    if(uniqueAuthors.length===0){h='<p>Нет пользователей</p>'}
-    document.getElementById('adminContent').innerHTML=h;
-}
-
-window.openEditUser=function(id,name,followers){
-    document.getElementById('editUserId').value=id;
-    document.getElementById('editUserName').value=name;
-    document.getElementById('editUserFollowers').value=followers;
-    document.getElementById('editUserModal').style.display='flex';
-};
-
-window.saveUserEdit=async function(){
-    var id=document.getElementById('editUserId').value;
-    var name=document.getElementById('editUserName').value;
-    var followers=parseInt(document.getElementById('editUserFollowers').value)||0;
-    
-    // Обновляем имя во всех видео этого пользователя
-    var userVideos=allVideos.filter(function(x){return x.artist_id===id});
-    for(var i=0;i<userVideos.length;i++){
-        await fetch(SUPABASE_URL+'/rest/v1/videos?id=eq.'+userVideos[i].id,{method:'PATCH',headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken,'Content-Type':'application/json'},body:JSON.stringify({artist:name})});
-    }
-    
-    // Обновляем подписчиков
-    var currentF=await fetch(SUPABASE_URL+'/rest/v1/follows?select=*&following_id=eq.'+id,{headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken,'Prefer':'count=exact'}});
-    var currentCount=parseInt(currentF.headers.get('content-range')?.split('/')[1])||0;
-    if(followers>currentCount){
-        for(var j=0;j<followers-currentCount;j++){
-            await fetch(SUPABASE_URL+'/rest/v1/follows',{method:'POST',headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken,'Content-Type':'application/json'},body:JSON.stringify({follower_id:currentUser.id,following_id:id})});
-        }
-    }
-    
-    document.getElementById('editUserModal').style.display='none';
-    loadAllVideos().then(function(){loadAdminUsers()});
-};
-
-window.closeEditUser=function(){document.getElementById('editUserModal').style.display='none'};
-
-// Удаление всех видео пользователя
-window.deleteUserVideos=async function(id){
-    if(!confirm('Удалить все видео этого пользователя?'))return;
-    var userVideos=allVideos.filter(function(x){return x.artist_id===id});
-    for(var i=0;i<userVideos.length;i++){
-        await fetch(SUPABASE_URL+'/rest/v1/videos?id=eq.'+userVideos[i].id,{method:'DELETE',headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken}});
-    }
-    allVideos=allVideos.filter(function(x){return x.artist_id!==id});
-    renderVideoGrid(allVideos,'videoGrid');
-    renderVideoGrid(allVideos,'trendingGrid');
-    loadAdminUsers();
-};
-
-async function loadAdminVideos(){
-    var r=await fetch(SUPABASE_URL+'/rest/v1/videos?select=*&order=created_at.desc',{headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken}});
-    var v=await r.json();var h='<table style="width:100%;border-collapse:collapse;font-size:13px"><tr><th>Название</th><th>Автор</th><th>Просмотры</th><th>Действия</th></tr>';
-    (v||[]).forEach(function(x){h+='<tr><td>'+x.title+'</td><td>'+x.artist+'</td><td>'+(x.views||0)+'</td><td><button class="btn-small" onclick="addViews(\''+x.id+'\',1000)">+1K</button><button class="btn-small" onclick="addViews(\''+x.id+'\',10000)">+10K</button><button class="btn-small" onclick="deleteVideo(\''+x.id+'\')">🗑️</button></td></tr>'});h+='</table>';
-    document.getElementById('adminContent').innerHTML=h;
-}
-
-window.addViews=async function(id,count){await fetch(SUPABASE_URL+'/rest/v1/videos?id=eq.'+id,{method:'PATCH',headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken,'Content-Type':'application/json'},body:JSON.stringify({views:(allVideos.find(function(x){return x.id==id})?.views||0)+count})});loadAllVideos();loadAdminVideos()};
-window.deleteVideo=async function(id){if(confirm('Удалить?')){await fetch(SUPABASE_URL+'/rest/v1/videos?id=eq.'+id,{method:'DELETE',headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken}});allVideos=allVideos.filter(function(x){return x.id!=id});renderVideoGrid(allVideos,'videoGrid');loadAdminVideos()}};
-function closeAdmin(){document.getElementById('adminModal').style.display='none'}
-
-async function searchVideos(){
-    var q=document.getElementById('searchInput').value.toLowerCase();if(!q)return renderVideoGrid(allVideos,'videoGrid');
-    renderVideoGrid(allVideos.filter(function(v){return v.title.toLowerCase().includes(q)||v.artist.toLowerCase().includes(q)}),'videoGrid');showPage('home-page');
-}
-</script>
-</body>
-</html>
