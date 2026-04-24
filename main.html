@@ -56,6 +56,7 @@
         .channel-avatar:hover{transform:scale(1.15)}
         .video-details h3{font-size:15px;margin-bottom:3px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
         .video-details p{font-size:13px;color:#aaa}
+        /* СТРАНИЦА ПРОСМОТРА */
         .watch-page{display:none;padding:20px;flex:1;overflow-y:auto;animation:slideUp 0.3s ease}
         .watch-page.active{display:flex;gap:20px}
         .watch-main{flex:1;max-width:900px}
@@ -74,41 +75,53 @@
         .like-buttons button:hover{background:#3e3e3e}
         .like-buttons button:active{animation:likePop 0.3s ease}
         .like-buttons .divider{width:1px;height:24px;background:#3e3e3e}
-        .watch-desc{background:#272727;padding:12px;border-radius:12px;margin:16px 0;font-size:14px;white-space:pre-wrap;transition:background 0.3s}
-        .watch-desc:hover{background:#333}
-        .comments-section{margin-top:24px}.comments-section h3{margin-bottom:16px}
+        .watch-desc{background:#272727;padding:12px;border-radius:12px;margin:16px 0;font-size:14px;white-space:pre-wrap}
+        /* КОММЕНТАРИИ */
+        .comments-section{margin-top:24px}
+        .comments-section h3{margin-bottom:16px}
         .comment-input{display:flex;gap:12px;margin-bottom:24px}
         .comment-input img{width:40px;height:40px;border-radius:50%;object-fit:cover}
         .comment-input input{flex:1;background:transparent;border:none;border-bottom:1px solid #3e3e3e;color:#fff;padding:8px 0;outline:none;transition:border-color 0.3s}
         .comment-input input:focus{border-bottom-color:#3b82f6}
-        .comment{display:flex;gap:12px;margin-bottom:16px;animation:commentSlide 0.3s ease;position:relative}
-        .comment img{width:40px;height:40px;border-radius:50%;object-fit:cover}
-        .comment-body h4{font-size:14px;margin-bottom:4px}.comment-body h4 span{font-size:12px;color:#aaa;margin-left:8px}
-        .comment-body p{font-size:14px}
-        .comment-delete{position:absolute;right:0;top:0;background:none;border:none;color:#666;cursor:pointer;font-size:14px;opacity:0;transition:opacity 0.2s,color 0.2s;padding:4px}
+        .comment{display:flex;gap:12px;margin-bottom:12px;animation:commentSlide 0.3s ease;position:relative}
+        .comment img{width:40px;height:40px;border-radius:50%;object-fit:cover;flex-shrink:0}
+        .comment-body{flex:1}
+        .comment-body h4{font-size:14px;margin-bottom:4px}
+        .comment-body h4 span{font-size:12px;color:#aaa;margin-left:8px;font-weight:400}
+        .comment-body p{font-size:14px;margin-bottom:8px}
+        .comment-actions{display:flex;gap:16px;font-size:12px;color:#aaa}
+        .comment-actions button{background:none;border:none;color:#aaa;cursor:pointer;font-size:12px;transition:color 0.2s;padding:0}
+        .comment-actions button:hover{color:#fff}
+        .comment-delete{position:absolute;right:0;top:0;background:none;border:none;color:#666;cursor:pointer;font-size:14px;opacity:0;transition:opacity 0.2s,color 0.2s}
         .comment:hover .comment-delete{opacity:1}
         .comment-delete:hover{color:#ff4444}
+        .replies{margin-left:52px;margin-top:8px}
+        .reply-input{display:flex;gap:8px;margin-top:8px;display:none}
+        .reply-input input{flex:1;background:transparent;border:none;border-bottom:1px solid #3e3e3e;color:#fff;padding:4px 0;outline:none;font-size:13px}
+        .reply-input input:focus{border-bottom-color:#3b82f6}
+        .reply-input button{background:none;border:none;color:#3b82f6;cursor:pointer;font-size:13px;font-weight:600}
         .watch-sidebar{width:380px;display:flex;flex-direction:column;gap:12px}
         @media(max-width:768px){.watch-sidebar{display:none}}
         .page{display:none}.page.active{display:block;animation:scaleIn 0.3s ease}
+        /* МОДАЛКИ */
         .modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);align-items:center;justify-content:center;z-index:1000}
         .modal-content{background:#1a1a1a;padding:24px;border-radius:12px;width:90%;max-width:500px;max-height:80vh;overflow-y:auto;animation:scaleIn 0.3s ease}
         .modal-content h2{margin-bottom:16px}.modal-content input,.modal-content textarea{width:100%;padding:12px;margin-bottom:14px;background:#272727;border:1px solid #3e3e3e;color:#fff;border-radius:8px;font-size:14px;transition:border-color 0.3s}
         .modal-content input:focus,.modal-content textarea:focus{border-color:#3b82f6}
         .modal-content textarea{height:70px;resize:vertical}.modal-content label{color:#aaa;margin-bottom:6px;display:block}
-        .modal-content input[type="file"]{padding:8px}
         .modal-buttons{display:flex;gap:10px}
         .btn-primary{flex:1;padding:12px;background:#3b82f6;border:none;border-radius:20px;color:#fff;font-weight:700;cursor:pointer;transition:background 0.3s,transform 0.2s}
-        .btn-primary:hover{background:#2563eb;transform:scale(1.02)}
-        .btn-primary:disabled{opacity:0.5;transform:none}
-        .btn-primary:active{animation:pulse 0.5s ease}
-        .btn-secondary{flex:1;padding:12px;background:#272727;border:none;border-radius:20px;color:#fff;cursor:pointer;transition:background 0.3s}
-        .btn-secondary:hover{background:#3e3e3e}
-        .upload-progress{margin:14px 0;display:none}
-        .upload-bar{height:4px;background:#3e3e3e;border-radius:2px}
+        .btn-primary:hover{background:#2563eb;transform:scale(1.02)}.btn-primary:disabled{opacity:0.5}
+        .btn-secondary{flex:1;padding:12px;background:#272727;border:none;border-radius:20px;color:#fff;cursor:pointer;transition:background 0.3s}.btn-secondary:hover{background:#3e3e3e}
+        .upload-progress{margin:14px 0;display:none}.upload-bar{height:4px;background:#3e3e3e;border-radius:2px}
         .upload-fill{height:100%;background:#3b82f6;width:0%;border-radius:2px;transition:width 0.5s ease}
-        .empty-state{text-align:center;padding:50px;color:#aaa;animation:scaleIn 0.5s ease}
-        .empty-state i{font-size:48px;margin-bottom:14px;opacity:0.5}
+        .empty-state{text-align:center;padding:50px;color:#aaa;animation:scaleIn 0.5s ease}.empty-state i{font-size:48px;margin-bottom:14px;opacity:0.5}
+        /* ПОДПИСКИ - отображение как каналы */
+        .subs-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:16px}
+        .sub-card{display:flex;align-items:center;gap:12px;padding:12px;background:#1a1a1a;border-radius:12px;cursor:pointer;transition:background 0.2s,transform 0.2s;animation:scaleIn 0.3s ease}
+        .sub-card:hover{background:#272727;transform:translateY(-2px)}
+        .sub-card img{width:48px;height:48px;border-radius:50%;object-fit:cover}
+        .sub-card h4{font-size:15px}.sub-card p{font-size:13px;color:#aaa}
         #loading{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh}
         .spinner{width:48px;height:48px;border:3px solid #272727;border-top-color:#3b82f6;border-radius:50%;animation:spin 1s linear infinite;margin-bottom:14px}
     </style>
@@ -139,7 +152,7 @@
         <div class="content">
             <div id="home-page" class="page active"><div class="video-grid" id="videoGrid"></div></div>
             <div id="trending-page" class="page"><h2 style="margin-bottom:16px">Тренды</h2><div class="video-grid" id="trendingGrid"></div></div>
-            <div id="subscriptions-page" class="page"><h2 style="margin-bottom:16px">Подписки</h2><div class="video-grid" id="subsGrid"></div></div>
+            <div id="subscriptions-page" class="page"><h2 style="margin-bottom:16px">Подписки</h2><div class="subs-grid" id="subsGrid"></div></div>
             <div id="liked-page" class="page"><h2 style="margin-bottom:16px">Понравившиеся</h2><div class="video-grid" id="likedGrid"></div></div>
             <div class="watch-page" id="watchPage">
                 <div class="watch-main">
@@ -159,7 +172,7 @@
                     <div class="watch-desc" id="watchDesc"></div>
                     <div class="comments-section">
                         <h3 id="commentsCount">Комментарии</h3>
-                        <div class="comment-input"><img id="commentAvatar" src="https://i.pravatar.cc/40?img=7"><input type="text" id="commentInput" placeholder="Оставить комментарий..."><button class="icon-btn" onclick="addComment()"><i class="fas fa-paper-plane"></i></button></div>
+                        <div class="comment-input"><img id="commentAvatar" src="https://i.pravatar.cc/40?img=7"><input type="text" id="commentInput" placeholder="Оставить комментарий..."><button class="icon-btn" onclick="addComment(null)"><i class="fas fa-paper-plane"></i></button></div>
                         <div id="commentsList"></div>
                     </div>
                 </div>
@@ -182,7 +195,7 @@
 <script>
 const SUPABASE_URL='https://axocsccfyyrtcegxvwal.supabase.co';
 const SUPABASE_ANON_KEY='sb_publishable_Jga_s88V7TAEUSvHIFkMvA_DT5vG44E';
-let currentUser=null,accessToken=null,currentVideo=null,allVideos=[],userAvatars={};
+let currentUser=null,accessToken=null,currentVideo=null,allVideos=[],userAvatars={},userNames={};
 const ADMIN_EMAIL='radmirnoros@gmail.com';
 
 async function init(){
@@ -190,13 +203,11 @@ async function init(){
     if(!t||!u){window.location.href='login.html';return}
     accessToken=t;
     try{currentUser=JSON.parse(u)}catch(e){localStorage.clear();window.location.href='login.html';return}
-    document.getElementById('loading').style.display='none';
-    document.getElementById('app').style.display='flex';
+    document.getElementById('loading').style.display='none';document.getElementById('app').style.display='flex';
     if(currentUser.email===ADMIN_EMAIL)document.getElementById('adminPanelBtn').style.display='flex';
     var myAvatar=currentUser.user_metadata?.avatar_url||'https://i.pravatar.cc/32?img=7';
-    document.getElementById('headerAvatar').src=myAvatar;
-    document.getElementById('commentAvatar').src=myAvatar;
-    userAvatars[currentUser.id]=myAvatar;
+    document.getElementById('headerAvatar').src=myAvatar;document.getElementById('commentAvatar').src=myAvatar;
+    userAvatars[currentUser.id]=myAvatar;userNames[currentUser.id]=currentUser.user_metadata?.name||currentUser.email?.split('@')[0];
     setupSidebar();setupEvents();await refreshVideos();
 }
 init();
@@ -212,26 +223,40 @@ function showPage(page){
     var el=document.getElementById(page+'-page');if(el)el.classList.add('active');
     if(page==='home')renderVideoGrid(allVideos,'videoGrid');
     if(page==='trending')renderVideoGrid(allVideos,'trendingGrid');
-    if(page==='subscriptions')loadSubscriptions();
+    if(page==='subscriptions')loadSubscriptionsPage();
     if(page==='liked')loadLiked();
 }
 async function refreshVideos(){
     try{
         var r=await fetch(SUPABASE_URL+'/rest/v1/videos?select=*&order=created_at.desc',{headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken}});
-        var d=await r.json();allVideos=Array.isArray(d)?d:[];
-        for(var i=0;i<allVideos.length;i++){var v=allVideos[i];if(!userAvatars[v.artist_id]){try{var ur=await fetch(SUPABASE_URL+'/rest/v1/profiles?select=*&id=eq.'+v.artist_id,{headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken}});var ud=await ur.json();userAvatars[v.artist_id]=(ud&&ud.length&&ud[0].avatar_url)?ud[0].avatar_url:null}catch(e){userAvatars[v.artist_id]=null}}}
+        allVideos=Array.isArray(await r.json())?await r.json():[];
     }catch(e){allVideos=[]}
-    renderVideoGrid(allVideos,'videoGrid');renderVideoGrid(allVideos,'trendingGrid');loadSubscriptions();loadLiked();
+    renderVideoGrid(allVideos,'videoGrid');renderVideoGrid(allVideos,'trendingGrid');loadSubscriptionsPage();loadLiked();
 }
 function getAvatar(aid){return userAvatars[aid]||'https://i.pravatar.cc/36?u='+(aid||'unknown')}
+function getName(aid){return userNames[aid]||'Пользователь'}
 function renderVideoGrid(v,c){
     var g=document.getElementById(c);if(!g)return;
     if(!v||!v.length){g.innerHTML='<div class="empty-state"><i class="fas fa-video"></i><p>Нет видео</p></div>';return}
     g.innerHTML=v.map(function(x){var av=getAvatar(x.artist_id);return '<div class="video-card" onclick="watchVideo(\''+x.id+'\')"><div class="thumb-wrap">'+(x.thumbnail_url?'<img src="'+x.thumbnail_url+'" loading="lazy">':'<video src="'+x.video_url+'" muted preload="metadata"></video>')+'</div><div class="video-info"><img class="channel-avatar" src="'+av+'" onerror="this.src=\'https://i.pravatar.cc/36?u='+(x.artist_id||'')+'\'"><div class="video-details"><h3>'+(x.title||'Без названия')+'</h3><p>'+(x.artist||'Автор')+' • '+(x.views||0)+' просмотров</p></div></div></div>'}).join('');
 }
-async function loadSubscriptions(){
-    try{var f=await fetch(SUPABASE_URL+'/rest/v1/follows?select=following_id&follower_id=eq.'+currentUser.id,{headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken}});var d=await f.json();var ids=Array.isArray(d)?d.map(function(x){return x.following_id}):[];renderVideoGrid(allVideos.filter(function(v){return ids.includes(v.artist_id)}),'subsGrid')}catch(e){}
+
+// ПОДПИСКИ - отображение как каналы
+async function loadSubscriptionsPage(){
+    try{
+        var f=await fetch(SUPABASE_URL+'/rest/v1/follows?select=following_id&follower_id=eq.'+currentUser.id,{headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken}});
+        var d=await f.json();var ids=Array.isArray(d)?d.map(function(x){return x.following_id}):[];
+        var subsHtml='';
+        for(var i=0;i<ids.length;i++){
+            var uid=ids[i];var name=getName(uid);var av=getAvatar(uid);
+            var vids=allVideos.filter(function(v){return v.artist_id===uid});
+            subsHtml+='<div class="sub-card" onclick="viewChannel(\''+uid+'\')"><img src="'+av+'" onerror="this.src=\'https://i.pravatar.cc/48?u='+uid+'\'"><div><h4>'+name+'</h4><p>'+vids.length+' видео</p></div></div>';
+        }
+        document.getElementById('subsGrid').innerHTML=subsHtml||'<div class="empty-state"><i class="fas fa-user-plus"></i><p>Нет подписок</p></div>';
+    }catch(e){}
 }
+window.viewChannel=function(uid){window.location.href='profile.html?id='+uid};
+
 async function loadLiked(){
     try{var l=await fetch(SUPABASE_URL+'/rest/v1/likes?select=video_id&user_id=eq.'+currentUser.id,{headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken}});var d=await l.json();var ids=Array.isArray(d)?d.map(function(x){return x.video_id}):[];renderVideoGrid(allVideos.filter(function(v){return ids.includes(v.id)}),'likedGrid')}catch(e){}
 }
@@ -259,35 +284,37 @@ async function updateWatchStats(){
     var isF=(await f.json()).length>0;var sb=document.getElementById('watchSubscribeBtn');sb.textContent=isF?'Вы подписаны':'Подписаться';sb.className='subscribe-btn '+(isF?'unsub':'sub');
 }
 
-// ЗАГРУЗКА КОММЕНТАРИЕВ С КНОПКОЙ УДАЛЕНИЯ
+// КОММЕНТАРИИ С ОТВЕТАМИ
 async function loadComments(){
-    var r=await fetch(SUPABASE_URL+'/rest/v1/comments?select=*&video_id=eq.'+currentVideo.id+'&order=created_at.desc',{headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken}});
-    var c=await r.json();
-    document.getElementById('commentsCount').textContent='Комментарии ('+(c?c.length:0)+')';
-    document.getElementById('commentsList').innerHTML=(c||[]).map(function(comment){
-        var canDelete=(currentUser.id===currentVideo.artist_id)||(currentUser.id===comment.user_id);
-        return '<div class="comment" id="comment-'+comment.id+'">'+
-            '<img src="https://i.pravatar.cc/40?u='+comment.user_id+'" onerror="this.src=\'https://i.pravatar.cc/40?img=7\'">'+
-            '<div class="comment-body"><h4>Пользователь <span>'+new Date(comment.created_at).toLocaleDateString()+'</span></h4><p>'+comment.text+'</p></div>'+
-            (canDelete?'<button class="comment-delete" onclick="deleteComment(\''+comment.id+'\')" title="Удалить"><i class="fas fa-trash"></i></button>':'')+
-        '</div>';
-    }).join('');
+    var r=await fetch(SUPABASE_URL+'/rest/v1/comments?select=*&video_id=eq.'+currentVideo.id+'&parent_id=is.null&order=created_at.desc',{headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken}});
+    var comments=await r.json();
+    var repliesR=await fetch(SUPABASE_URL+'/rest/v1/comments?select=*&video_id=eq.'+currentVideo.id+'&parent_id=not.is.null&order=created_at.asc',{headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken}});
+    var replies=await repliesR.json();
+    document.getElementById('commentsCount').textContent='Комментарии ('+((comments?comments.length:0)+(replies?replies.length:0))+')';
+    var html='';
+    (comments||[]).forEach(function(c){html+=renderComment(c,replies||[])});
+    document.getElementById('commentsList').innerHTML=html||'<p style="color:#aaa">Нет комментариев</p>';
 }
-
-// УДАЛЕНИЕ КОММЕНТАРИЯ
+function renderComment(c,replies){
+    var canDelete=(currentUser.id===currentVideo.artist_id)||(currentUser.id===c.user_id);
+    var childReplies=replies.filter(function(r){return r.parent_id===c.id});
+    var h='<div class="comment" id="comment-'+c.id+'"><img src="https://i.pravatar.cc/40?u='+c.user_id+'" onerror="this.src=\'https://i.pravatar.cc/40?img=7\'"><div class="comment-body"><h4>'+getName(c.user_id)+' <span>'+new Date(c.created_at).toLocaleDateString()+'</span></h4><p>'+c.text+'</p><div class="comment-actions"><button onclick="showReplyInput(\''+c.id+'\')"><i class="far fa-comment"></i> Ответить</button>'+(canDelete?'<button onclick="deleteComment(\''+c.id+'\')"><i class="far fa-trash-alt"></i> Удалить</button>':'')+'</div><div class="reply-input" id="reply-input-'+c.id+'"><input type="text" id="reply-text-'+c.id+'" placeholder="Написать ответ..."><button onclick="addComment(\''+c.id+'\')">Ответить</button></div></div>';
+    if(childReplies.length>0){h+='<div class="replies">';childReplies.forEach(function(r){h+=renderComment(r,replies)});h+='</div>'}
+    h+='</div>';return h;
+}
+window.showReplyInput=function(parentId){var el=document.getElementById('reply-input-'+parentId);el.style.display='flex';el.querySelector('input').focus()};
+window.addComment=async function(parentId){
+    var text;if(parentId){text=document.getElementById('reply-text-'+parentId).value.trim()}else{text=document.getElementById('commentInput').value.trim()}
+    if(!text)return;
+    await fetch(SUPABASE_URL+'/rest/v1/comments',{method:'POST',headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken,'Content-Type':'application/json'},body:JSON.stringify({user_id:currentUser.id,video_id:currentVideo.id,text:text,parent_id:parentId||null})});
+    if(!parentId)document.getElementById('commentInput').value='';loadComments();
+};
 window.deleteComment=async function(commentId){
     if(!confirm('Удалить комментарий?'))return;
-    var el=document.getElementById('comment-'+commentId);
-    if(el){el.style.animation='fadeOut 0.3s ease forwards';setTimeout(function(){el.remove()},300)}
+    var el=document.getElementById('comment-'+commentId);if(el){el.style.animation='fadeOut 0.3s ease forwards';setTimeout(function(){el.remove()},300)}
     await fetch(SUPABASE_URL+'/rest/v1/comments?id=eq.'+commentId,{method:'DELETE',headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken}});
     loadComments();
 };
-
-async function addComment(){
-    var text=document.getElementById('commentInput').value.trim();if(!text)return;
-    await fetch(SUPABASE_URL+'/rest/v1/comments',{method:'POST',headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken,'Content-Type':'application/json'},body:JSON.stringify({user_id:currentUser.id,video_id:currentVideo.id,text:text})});
-    document.getElementById('commentInput').value='';loadComments();
-}
 async function loadSidebarVideos(){
     document.getElementById('watchSidebar').innerHTML=allVideos.filter(function(x){return x.id!==(currentVideo?.id)}).slice(0,10).map(function(v){var av=getAvatar(v.artist_id);return '<div class="video-card" onclick="watchVideo(\''+v.id+'\')"><div class="thumb-wrap">'+(v.thumbnail_url?'<img src="'+v.thumbnail_url+'">':'<video src="'+v.video_url+'" muted preload="metadata"></video>')+'</div><div class="video-info"><img class="channel-avatar" src="'+av+'"><div class="video-details"><h3>'+(v.title||'')+'</h3><p>'+(v.artist||'')+' • '+(v.views||0)+' просмотров</p></div></div>'}).join('');
 }
@@ -296,19 +323,10 @@ async function loadSidebarVideos(){
     document.addEventListener('click',function(){document.getElementById('userDropdown').classList.remove('show')});
     document.getElementById('logoutBtn').addEventListener('click',function(e){e.preventDefault();localStorage.clear();window.location.href='login.html'});
     document.getElementById('watchLikeBtn').addEventListener('click',async function(){
-        if(!currentVideo)return;var btn=this;
-        btn.style.animation='likePop 0.3s ease';
-        setTimeout(function(){btn.style.animation=''},300);
+        if(!currentVideo)return;var btn=this;btn.style.animation='likePop 0.3s ease';setTimeout(function(){btn.style.animation=''},300);
         var l=await fetch(SUPABASE_URL+'/rest/v1/likes?select=*&user_id=eq.'+currentUser.id+'&video_id=eq.'+currentVideo.id,{headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken}});
-        var d=await l.json();if(d.length){await fetch(SUPABASE_URL+'/rest/v1/likes?user_id=eq.'+currentUser.id+'&video_id=eq.'+currentVideo.id,{method:'DELETE',headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken}})}else{await fetch(SUPABASE_URL+'/rest/v1/likes',{method:'POST',headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken,'Content-Type':'application/json'},body:JSON.stringify({user_id:currentUser.id,video_id:currentVideo.id})})}
-        updateWatchStats();
-    });
-    document.getElementById('watchSubscribeBtn').addEventListener('click',async function(){
-        if(!currentVideo)return;var btn=this;btn.style.transform='scale(1.1)';setTimeout(function(){btn.style.transform=''},200);
-        var f=await fetch(SUPABASE_URL+'/rest/v1/follows?select=*&follower_id=eq.'+currentUser.id+'&following_id=eq.'+currentVideo.artist_id,{headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken}});
-        var d=await f.json();if(d.length){await fetch(SUPABASE_URL+'/rest/v1/follows?follower_id=eq.'+currentUser.id+'&following_id=eq.'+currentVideo.artist_id,{method:'DELETE',headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken}})}else{await fetch(SUPABASE_URL+'/rest/v1/follows',{method:'POST',headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken,'Content-Type':'application/json'},body:JSON.stringify({follower_id:currentUser.id,following_id:currentVideo.artist_id})})}
-        updateWatchStats();
-    });
+        var d=await l.json();if(d.length){await fetch(SUPABASE_URL+'/rest/v1/likes?user_id=eq.'+currentUser.id+'&video_id=eq.'+currentVideo.id,{method:'DELETE',headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken}})}else{await fetch(SUPABASE_URL+'/rest/v1/likes',{method:'POST',headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken,'Content-Type':'application/json'},body:JSON.stringify({user_id:currentUser.id,video_id:currentVideo.id})})}updateWatchStats()});
+    document.getElementById('watchSubscribeBtn').addEventListener('click',async function(){if(!currentVideo)return;var btn=this;btn.style.transform='scale(1.1)';setTimeout(function(){btn.style.transform=''},200);var f=await fetch(SUPABASE_URL+'/rest/v1/follows?select=*&follower_id=eq.'+currentUser.id+'&following_id=eq.'+currentVideo.artist_id,{headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken}});var d=await f.json();if(d.length){await fetch(SUPABASE_URL+'/rest/v1/follows?follower_id=eq.'+currentUser.id+'&following_id=eq.'+currentVideo.artist_id,{method:'DELETE',headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken}})}else{await fetch(SUPABASE_URL+'/rest/v1/follows',{method:'POST',headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken,'Content-Type':'application/json'},body:JSON.stringify({follower_id:currentUser.id,following_id:currentVideo.artist_id})})}updateWatchStats()});
     var uploadModal=document.getElementById('uploadModal');
     document.getElementById('uploadBtn').addEventListener('click',function(){uploadModal.style.display='flex'});
     document.getElementById('cancelUpload').addEventListener('click',function(){uploadModal.style.display='none';clearUploadForm()});
