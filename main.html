@@ -223,3 +223,72 @@ function showPage(page){
     document.getElementById('watchPage').style.display='none';document.getElementById('watchPage').classList.remove('active');
     var el=document.getElementById(page);if(el)el.classList.add('active');
 }
+function setupEvents(){
+    document.getElementById('userMenuBtn').addEventListener('click',function(e){e.stopPropagation();document.getElementById('userDropdown').classList.toggle('show')});
+    document.addEventListener('click',function(){document.getElementById('userDropdown').classList.remove('show')});
+    document.getElementById('logoutBtn').addEventListener('click',function(e){e.preventDefault();localStorage.clear();window.location.href='login.html'});
+    
+    document.getElementById('watchLikeBtn').addEventListener('click',async function(){
+        if(!currentVideo)return;
+        var l=await fetch(SUPABASE_URL+'/rest/v1/likes?select=*&user_id=eq.'+currentUser.id+'&video_id=eq.'+currentVideo.id,{headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken}});
+        var d=await l.json();
+        if(d.length){await fetch(SUPABASE_URL+'/rest/v1/likes?user_id=eq.'+currentUser.id+'&video_id=eq.'+currentVideo.id,{method:'DELETE',headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken}})}
+        else{await fetch(SUPABASE_URL+'/rest/v1/likes',{method:'POST',headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken,'Content-Type':'application/json'},body:JSON.stringify({user_id:currentUser.id,video_id:currentVideo.id})})}
+        updateWatchStats();
+    });
+    
+    document.getElementById('watchSubscribeBtn').addEventListener('click',async function(){
+        if(!currentVideo)return;
+        var f=await fetch(SUPABASE_URL+'/rest/v1/follows?select=*&follower_id=eq.'+currentUser.id+'&following_id=eq.'+currentVideo.artist_id,{headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken}});
+        var d=await f.json();
+        if(d.length){await fetch(SUPABASE_URL+'/rest/v1/follows?follower_id=eq.'+currentUser.id+'&following_id=eq.'+currentVideo.artist_id,{method:'DELETE',headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken}})}
+        else{await fetch(SUPABASE_URL+'/rest/v1/follows',{method:'POST',headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken,'Content-Type':'application/json'},body:JSON.stringify({follower_id:currentUser.id,following_id:currentVideo.artist_id})})}
+        updateWatchStats();
+    });
+    
+    var uploadModal=document.getElementById('uploadModal');
+    document.getElementById('uploadBtn').addEventListener('click',function(){uploadModal.style.display='flex'});
+    document.getElementById('cancelUpload').addEventListener('click',function(){uploadModal.style.display='none';resetUpload()});
+    document.getElementById('confirmUpload').addEventListener('click',async function(){
+        var title=document.getElementById('uploadTitle').value,vf=document.getElementById('uploadVideoFile').files[0],tf=document.getElementById('uploadThumbFile').files[0],desc=document.getElementById('uploadDesc').value;
+        if(!title||!vf){alert('Введите название и выберите видео');return}
+        var btn=document.getElementById('confirmUpload');btn.disabled=true;btn.textContent='Загрузка...';
+        var progress=document.getElementById('uploadProgress');progress.style.display='block';
+        try{
+            var artist=currentUser.user_metadata?.name||currentUser.email?.split('@')[0];
+            var fd=new FormData();fd.append('file',vf);
+            var fn='videos/'+currentUser.id+'/'+Date.now()+'_'+vf.name.replace(/[^a-zA-Z0-9.]/g,'_');
+            await fetch(SUPABASE_URL+'/storage/v1/object/music/'+fn,{method:'POST',headers:{'Authorization':'Bearer '+accessToken,'apikey':SUPABASE_ANON_KEY},body:fd});
+            document.getElementById('uploadFill').style.width='50%';document.getElementById('uploadPercent').textContent='50%';
+            var vUrl=SUPABASE_URL+'/storage/v1/object/public/music/'+fn;var tUrl=null;
+            if(tf){var tfd=new FormData();tfd.append('file',tf);var tfn='thumbs/'+currentUser.id+'/'+Date.now()+'_'+tf.name.replace(/[^a-zA-Z0-9.]/g,'_');await fetch(SUPABASE_URL+'/storage/v1/object/music/'+tfn,{method:'POST',headers:{'Authorization':'Bearer '+accessToken,'apikey':SUPABASE_ANON_KEY},body:tfd});tUrl=SUPABASE_URL+'/storage/v1/object/public/music/'+tfn}
+            document.getElementById('uploadFill').style.width='80%';document.getElementById('uploadPercent').textContent='80%';
+            var res=await fetch(SUPABASE_URL+'/rest/v1/videos',{method:'POST',headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken,'Content-Type':'application/json','Prefer':'return=representation'},body:JSON.stringify({title:title,artist:artist,artist_id:currentUser.id,video_url:vUrl,thumbnail_url:tUrl,description:desc,views:0})});
+            var newVideo=await res.json();
+            document.getElementById('uploadFill').style.width='100%';document.getElementById('uploadPercent').textContent='100%';
+            if(Array.isArray(newVideo)){allVideos=[newVideo[0]].concat(allVideos)}else if(newVideo){allVideos=[newVideo].concat(allVideos)}
+            setTimeout(function(){uploadModal.style.display='none';resetUpload();renderVideoGrid(allVideos,'videoGrid');renderVideoGrid(allVideos,'trendingGrid')},500);
+        }catch(e){alert('Ошибка: '+e.message)}finally{btn.disabled=false;btn.textContent='Загрузить'}
+    });
+    function resetUpload(){document.getElementById('uploadTitle').value='';document.getElementById('uploadDesc').value='';document.getElementById('uploadVideoFile').value='';document.getElementById('uploadThumbFile').value='';document.getElementById('uploadProgress').style.display='none';document.getElementById('uploadFill').style.width='0%'}
+    document.getElementById('adminPanelBtn')?.addEventListener('click',function(){document.getElementById('adminModal').style.display='flex';loadAdminUsers()});
+}
+
+async function loadAdminUsers(){
+    var r=await fetch(SUPABASE_URL+'/auth/v1/users',{headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken}});
+    var users=await r.json();var h='<table style="width:100%;border-collapse:collapse"><tr><th>Email</th><th>Имя</th><th>Действия</th></tr>';
+    users.forEach(function(u){h+='<tr><td>'+u.email+'</td><td>'+(u.user_metadata?.name||'-')+'</td><td><button class="btn-primary" onclick="deleteUser(\''+u.id+'\')">Удалить</button></td></tr>'});h+='</table>';
+    document.getElementById('adminContent').innerHTML=h;
+}
+window.deleteUser=async function(id){if(confirm('Удалить?')){await fetch(SUPABASE_URL+'/auth/v1/users/'+id,{method:'DELETE',headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken}});loadAdminUsers()}};
+async function loadAdminVideos(){var r=await fetch(SUPABASE_URL+'/rest/v1/videos?select=*',{headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken}});var v=await r.json();var h='<table style="width:100%;border-collapse:collapse"><tr><th>Название</th><th>Автор</th><th>Просмотры</th><th>Действия</th></tr>';v.forEach(function(x){h+='<tr><td>'+x.title+'</td><td>'+x.artist+'</td><td>'+(x.views||0)+'</td><td><button class="btn-primary" onclick="deleteVideo(\''+x.id+'\')">Удалить</button></td></tr>'});h+='</table>';document.getElementById('adminContent').innerHTML=h}
+window.deleteVideo=async function(id){if(confirm('Удалить?')){await fetch(SUPABASE_URL+'/rest/v1/videos?id=eq.'+id,{method:'DELETE',headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken}});allVideos=allVideos.filter(function(x){return x.id!=id});renderVideoGrid(allVideos,'videoGrid');loadAdminVideos()}};
+function closeAdmin(){document.getElementById('adminModal').style.display='none'}
+
+async function searchVideos(){
+    var q=document.getElementById('searchInput').value.toLowerCase();if(!q)return renderVideoGrid(allVideos,'videoGrid');
+    renderVideoGrid(allVideos.filter(function(v){return v.title.toLowerCase().includes(q)||v.artist.toLowerCase().includes(q)}),'videoGrid');showPage('home-page');
+}
+</script>
+</body>
+</html>
