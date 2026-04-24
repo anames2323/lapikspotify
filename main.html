@@ -175,15 +175,44 @@ function showPage(p){
     if(p==='home')renderGrid(allVideos,'videoGrid');if(p==='trending')renderGrid(allVideos,'trendingGrid');
     if(p==='subscriptions')loadSubs();if(p==='liked')loadLiked();if(p==='history')loadHistory();
 }
+
 async function refreshVideos(){
-    try{var r=await fetch(SUPABASE_URL+'/rest/v1/videos?select=*&order=created_at.desc',{headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken}});allVideos=(await r.json())||[]}catch(e){allVideos=[]}
-    renderGrid(allVideos,'videoGrid');renderGrid(allVideos,'trendingGrid');loadSubs();loadLiked();loadHistory();
+    console.log('🔄 Загрузка видео из Supabase...');
+    try{
+        var r=await fetch(SUPABASE_URL+'/rest/v1/videos?select=*&order=created_at.desc',{
+            headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken}
+        });
+        var data=await r.json();
+        console.log('📦 Данные получены:',data);
+        allVideos=Array.isArray(data)?data:[];
+        console.log('✅ Видео загружено:',allVideos.length);
+    }catch(e){
+        console.error('❌ Ошибка загрузки:',e);
+        allVideos=[];
+    }
+    renderGrid(allVideos,'videoGrid');
+    renderGrid(allVideos,'trendingGrid');
+    loadSubs();loadLiked();loadHistory();
 }
+
 function renderGrid(v,c){
-    var g=document.getElementById(c);if(!g||!v||!v.length){if(g)g.innerHTML='<div class="empty-state">Нет видео</div>';return}
-    g.innerHTML=v.map(x=>`<div class="video-card" onclick="watchVideo('${x.id}')"><div class="thumb-wrap">${x.thumbnail_url?`<img src="${x.thumbnail_url}">`:`<video src="${x.video_url}" muted preload="metadata"></video>`}</div><div class="video-info"><img class="channel-avatar" src="https://i.pravatar.cc/36?u=${x.artist_id||''}"><div class="video-details"><h3>${x.title||''}</h3><p>${x.artist||''} • ${x.views||0} просмотров</p></div></div></div>`).join('')
+    var g=document.getElementById(c);
+    if(!g)return;
+    if(!v||!v.length){
+        g.innerHTML='<div class="empty-state"><i class="fas fa-video"></i><p>Нет видео</p></div>';
+        return;
+    }
+    g.innerHTML=v.map(x=>`<div class="video-card" onclick="watchVideo('${x.id}')"><div class="thumb-wrap">${x.thumbnail_url?`<img src="${x.thumbnail_url}">`:`<video src="${x.video_url}" muted preload="metadata"></video>`}</div><div class="video-info"><img class="channel-avatar" src="https://i.pravatar.cc/36?u=${x.artist_id||''}"><div class="video-details"><h3>${x.title||'Без названия'}</h3><p>${x.artist||'Автор'} • ${x.views||0} просмотров</p></div></div></div>`).join('');
 }
-async function loadSubs(){try{var f=await fetch(SUPABASE_URL+'/rest/v1/follows?select=following_id&follower_id=eq.'+currentUser.id,{headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken}});var d=await f.json();var ids=Array.isArray(d)?d.map(x=>x.following_id):[];var h='';for(var uid of ids){var name=allVideos.find(v=>v.artist_id===uid)?.artist||'Пользователь';h+=`<div class="sub-card" onclick="location.href='profile.html?id=${uid}'"><img src="https://i.pravatar.cc/48?u=${uid}"><div><h4>${name}</h4><p>${allVideos.filter(v=>v.artist_id===uid).length} видео</p></div></div>`}document.getElementById('subsGrid').innerHTML=h||'<div class="empty-state">Нет подписок</div>'}catch(e){}}
+
+async function loadSubs(){
+    try{
+        var f=await fetch(SUPABASE_URL+'/rest/v1/follows?select=following_id&follower_id=eq.'+currentUser.id,{headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken}});
+        var d=await f.json();var ids=Array.isArray(d)?d.map(x=>x.following_id):[];var h='';
+        for(var uid of ids){var name=allVideos.find(v=>v.artist_id===uid)?.artist||'Пользователь';h+=`<div class="sub-card" onclick="location.href='profile.html?id=${uid}'"><img src="https://i.pravatar.cc/48?u=${uid}"><div><h4>${name}</h4><p>${allVideos.filter(v=>v.artist_id===uid).length} видео</p></div></div>`}
+        document.getElementById('subsGrid').innerHTML=h||'<div class="empty-state">Нет подписок</div>';
+    }catch(e){}
+}
 async function loadLiked(){try{var l=await fetch(SUPABASE_URL+'/rest/v1/likes?select=video_id&user_id=eq.'+currentUser.id,{headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken}});var d=await l.json();var ids=Array.isArray(d)?d.map(x=>x.video_id):[];renderGrid(allVideos.filter(v=>ids.includes(v.id)),'likedGrid')}catch(e){}}
 async function saveToHistory(id){await fetch(SUPABASE_URL+'/rest/v1/watch_history',{method:'POST',headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken,'Content-Type':'application/json'},body:JSON.stringify({user_id:currentUser.id,video_id:id})}).catch(()=>{})}
 async function loadHistory(){try{var r=await fetch(SUPABASE_URL+'/rest/v1/watch_history?select=*,videos(*)&user_id=eq.'+currentUser.id+'&order=watched_at.desc&limit=50',{headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken}});renderGrid((await r.json()).map(h=>h.videos).filter(Boolean),'historyGrid')}catch(e){}}
