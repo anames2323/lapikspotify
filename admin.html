@@ -1,74 +1,57 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BluTube • Админ-панель</title>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BluTube • Админ</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         *{margin:0;padding:0;box-sizing:border-box;font-family:Roboto,Arial,sans-serif}
         body{background:#0f0f0f;color:#fff;min-height:100vh}
         .top-bar{display:flex;align-items:center;justify-content:space-between;padding:12px 24px;background:#0f0f0f;border-bottom:1px solid #272727}
-        .logo{color:#3b82f6;font-weight:700;font-size:20px;display:flex;align-items:center;gap:8px}
-        .logo i{background:#3b82f6;color:#fff;padding:6px;border-radius:6px;font-size:14px}
-        .back-btn{color:#fff;text-decoration:none;font-size:16px;display:flex;align-items:center;gap:8px}.back-btn:hover{color:#3b82f6}
+        .logo{color:#3b82f6;font-weight:700;font-size:20px}
+        .back-btn{color:#fff;text-decoration:none;font-size:16px}.back-btn:hover{color:#3b82f6}
         .container{max-width:1200px;margin:0 auto;padding:24px}
-        .tabs{display:flex;gap:12px;margin-bottom:24px;flex-wrap:wrap}
-        .tab-btn{padding:10px 20px;background:#272727;border:none;border-radius:20px;color:#fff;cursor:pointer;font-weight:500;transition:0.2s}
-        .tab-btn:hover{background:#3e3e3e}.tab-btn.active{background:#3b82f6}
+        .tabs{display:flex;gap:12px;margin-bottom:24px}
+        .tab-btn{padding:10px 20px;background:#272727;border:none;border-radius:20px;color:#fff;cursor:pointer}.tab-btn.active{background:#3b82f6}
         .content-card{background:#1a1a1a;border-radius:12px;padding:24px}
         table{width:100%;border-collapse:collapse;font-size:14px}
-        th,td{padding:12px;text-align:left;border-bottom:1px solid #272727}
-        th{color:#aaa;font-weight:500}
-        .btn-sm{padding:6px 14px;border:none;border-radius:15px;cursor:pointer;font-size:12px;margin:2px;transition:0.2s}
-        .btn-blue{background:#3b82f6;color:#fff}.btn-blue:hover{background:#2563eb}
-        .btn-red{background:#ef4444;color:#fff}.btn-red:hover{background:#dc2626}
-        .btn-green{background:#10b981;color:#fff}.btn-green:hover{background:#059669}
-        .btn-gray{background:#6b7280;color:#fff}.btn-gray:hover{background:#4b5563}
+        th,td{padding:12px;text-align:left;border-bottom:1px solid #272727}th{color:#aaa}
+        .btn-sm{padding:6px 14px;border:none;border-radius:15px;cursor:pointer;font-size:12px;margin:2px}
+        .btn-blue{background:#3b82f6;color:#fff}.btn-red{background:#ef4444;color:#fff}.btn-green{background:#10b981;color:#fff}
         input[type="number"],input[type="text"]{padding:8px 12px;background:#272727;border:1px solid #3e3e3e;color:#fff;border-radius:8px;width:80px;font-size:14px}
-        input[type="text"]{width:150px}
-        .stats-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px;margin-bottom:24px}
-        .stat-card{background:#272727;padding:20px;border-radius:12px;text-align:center}
-        .stat-card h3{font-size:36px;color:#3b82f6;margin-bottom:4px}.stat-card p{color:#aaa;font-size:14px}
+        input[type="text"]{width:200px}
         .modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);align-items:center;justify-content:center;z-index:1000}
-        .modal-content{background:#1a1a1a;padding:30px;border-radius:12px;width:90%;max-width:450px}
-        .modal-content h2{margin-bottom:20px}.modal-content input,.modal-content select{width:100%;padding:12px;margin-bottom:16px;background:#272727;border:1px solid #3e3e3e;color:#fff;border-radius:8px;font-size:14px}
-        .modal-content label{color:#aaa;margin-bottom:8px;display:block}
-        .modal-buttons{display:flex;gap:12px}
-        .empty-state{text-align:center;padding:40px;color:#aaa}
+        .modal-content{background:#1a1a1a;padding:30px;border-radius:12px;width:90%;max-width:500px}
+        .modal-content h2{margin-bottom:20px}.modal-content input,.modal-content textarea{width:100%;padding:12px;margin-bottom:14px;background:#272727;border:1px solid #3e3e3e;color:#fff;border-radius:8px;font-size:14px}
+        .modal-content textarea{height:70px}.modal-content label{color:#aaa;margin-bottom:6px;display:block}
+        .modal-content .hint{color:#666;font-size:12px;margin-top:-10px;margin-bottom:14px}
+        .modal-buttons{display:flex;gap:10px}
+        .btn-primary{flex:1;padding:12px;background:#3b82f6;border:none;border-radius:20px;color:#fff;font-weight:700;cursor:pointer}
+        .btn-secondary{flex:1;padding:12px;background:#272727;border:none;border-radius:20px;color:#fff;cursor:pointer}
         #loading{display:flex;align-items:center;justify-content:center;height:100vh}
-        .spinner{width:48px;height:48px;border:3px solid #272727;border-top-color:#3b82f6;border-radius:50%;animation:spin 1s linear infinite}
-        @keyframes spin{to{transform:rotate(360deg)}}
-        .verified-badge{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;background:#606060;border-radius:50%}
-        .verified-badge i{font-size:8px;color:#0f0f0f}
-        .verified-badge.gold{background:#ffd700}
+        .spinner{width:48px;height:48px;border:3px solid #272727;border-top-color:#3b82f6;border-radius:50%;animation:spin 1s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}
     </style>
 </head>
 <body>
 <div id="loading"><div class="spinner"></div></div>
 <div id="adminApp" style="display:none">
-    <div class="top-bar"><div class="logo"><i class="fas fa-play"></i> BluTube Admin</div><a href="main.html" class="back-btn"><i class="fas fa-arrow-left"></i> На главную</a></div>
+    <div class="top-bar"><div class="logo">BluTube Admin</div><a href="main.html" class="back-btn"><i class="fas fa-arrow-left"></i> На главную</a></div>
     <div class="container">
-        <div class="stats-grid" id="statsGrid"></div>
         <div class="tabs">
-            <button class="tab-btn active" onclick="showTab('users')">👥 Пользователи</button>
-            <button class="tab-btn" onclick="showTab('videos')">🎬 Видео</button>
+            <button class="tab-btn active" onclick="showTab('users')">Пользователи</button>
+            <button class="tab-btn" onclick="showTab('videos')">Видео</button>
+            <button class="tab-btn" onclick="showTab('upload')">Загрузить по ссылке</button>
         </div>
         <div class="content-card"><div id="tabContent"></div></div>
     </div>
 </div>
 <div class="modal" id="editModal">
     <div class="modal-content">
-        <h2>✏️ Редактировать</h2>
-        <input type="hidden" id="editId">
+        <h2>Редактировать</h2><input type="hidden" id="editId">
         <label>Имя</label><input type="text" id="editName">
-        <label>Текущие подписчики</label><input type="number" id="editFollowers" value="0" disabled>
-        <label>Накрутить подписчиков (сколько добавить)</label><input type="number" id="addFollowers" value="0" placeholder="Например: 1000">
-        <label>Верификация</label><select id="editVerified"><option value="false">Нет</option><option value="true">Да ✅</option></select>
-        <div class="modal-buttons">
-            <button class="btn-sm btn-green" onclick="saveEdit()" style="flex:1;padding:12px">Сохранить</button>
-            <button class="btn-sm btn-gray" onclick="closeModal()" style="flex:1;padding:12px">Отмена</button>
-        </div>
+        <label>Подписчики</label><input type="number" id="editFollowers" value="0">
+        <label>Добавить подписчиков</label><input type="number" id="addFollowers" value="0">
+        <div class="modal-buttons"><button class="btn-primary" onclick="saveEdit()">Сохранить</button><button class="btn-secondary" onclick="closeModal()">Отмена</button></div>
     </div>
 </div>
 <script>
@@ -76,7 +59,6 @@ const SUPABASE_URL='https://axocsccfyyrtcegxvwal.supabase.co';
 const SUPABASE_ANON_KEY='sb_publishable_Jga_s88V7TAEUSvHIFkMvA_DT5vG44E';
 const ADMIN_EMAIL='radmirnoros@gmail.com';
 let accessToken=null,allVideos=[];
-
 async function init(){
     var t=localStorage.getItem('supabase_token'),u=localStorage.getItem('supabase_user');
     if(!t||!u){window.location.href='login.html';return}
@@ -85,90 +67,62 @@ async function init(){
     document.getElementById('loading').style.display='none';document.getElementById('adminApp').style.display='block';
     await loadData();showTab('users');
 }init();
-
 async function loadData(){
     var r=await fetch(SUPABASE_URL+'/rest/v1/videos?select=*&order=created_at.desc',{headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken}});
     allVideos=(await r.json())||[];
-    var unique={},users=[];
-    allVideos.forEach(function(v){if(!unique[v.artist_id]){unique[v.artist_id]=true;users.push({id:v.artist_id,name:v.artist})}});
-    document.getElementById('statsGrid').innerHTML='<div class="stat-card"><h3>'+users.length+'</h3><p>Пользователей</p></div><div class="stat-card"><h3>'+allVideos.length+'</h3><p>Видео</p></div><div class="stat-card"><h3>'+allVideos.reduce(function(s,x){return s+(x.views||0)},0)+'</h3><p>Просмотров</p></div>';
 }
-
-async function showTab(tab){
-    document.querySelectorAll('.tab-btn').forEach(function(b){b.classList.remove('active')});
+function showTab(tab){
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
     event.target.classList.add('active');
-    if(tab==='users')loadUsersTab();else loadVideosTab();
+    if(tab==='users')loadUsers();else if(tab==='videos')loadVideos();else if(tab==='upload')loadUploadForm();
 }
-
-async function loadUsersTab(){
-    var unique={},users=[];
-    allVideos.forEach(function(v){if(!unique[v.artist_id]){unique[v.artist_id]=true;users.push({id:v.artist_id,name:v.artist})}});
-    var h='<table><tr><th>Имя</th><th>Подписчики</th><th>Видео</th><th>Вериф.</th><th>Действия</th></tr>';
-    for(var i=0;i<users.length;i++){
-        var u=users[i];
+async function loadUsers(){
+    var unique={},users=[];allVideos.forEach(v=>{if(!unique[v.artist_id]){unique[v.artist_id]=true;users.push({id:v.artist_id,name:v.artist})}});
+    var h='<table><tr><th>Имя</th><th>Подписчики</th><th>Видео</th><th>Действия</th></tr>';
+    for(var u of users){
         var f=await fetch(SUPABASE_URL+'/rest/v1/follows?select=*&following_id=eq.'+u.id,{headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken,'Prefer':'count=exact'}});
         var fCount=parseInt(f.headers.get('content-range')?.split('/')[1])||0;
-        var uVids=allVideos.filter(function(x){return x.artist_id===u.id});
-        var settings=JSON.parse(localStorage.getItem('blutube_users')||'{}')[u.id]||{};
-        var verified=settings.verified||fCount>=100000;
-        h+='<tr><td>'+u.name+'</td><td>'+fCount+'</td><td>'+uVids.length+'</td><td>'+(verified?'<span class="verified-badge gold"><i class="fas fa-check"></i></span>':'❌')+'</td><td><button class="btn-sm btn-blue" onclick="openEdit(\''+u.id+'\',\''+u.name+'\','+fCount+','+verified+')">✏️</button><button class="btn-sm btn-red" onclick="deleteUserVideos(\''+u.id+'\')">🗑️</button></td></tr>';
+        h+=`<tr><td>${u.name}</td><td>${fCount}</td><td>${allVideos.filter(v=>v.artist_id===u.id).length}</td><td><button class="btn-sm btn-blue" onclick="openEdit('${u.id}','${u.name}',${fCount})">✏️</button><button class="btn-sm btn-red" onclick="deleteUserVideos('${u.id}')">🗑️</button></td></tr>`;
     }
-    h+='</table>';document.getElementById('tabContent').innerHTML=h||'<div class="empty-state">Нет пользователей</div>';
+    document.getElementById('tabContent').innerHTML=h+'</table>';
 }
-
-function loadVideosTab(){
+function loadVideos(){
     var h='<table><tr><th>Название</th><th>Автор</th><th>Просмотры</th><th>Действия</th></tr>';
-    allVideos.forEach(function(v){h+='<tr><td>'+v.title+'</td><td>'+v.artist+'</td><td>'+(v.views||0)+'</td><td><button class="btn-sm btn-blue" onclick="addViews(\''+v.id+'\',1000)">+1K</button><button class="btn-sm btn-blue" onclick="addViews(\''+v.id+'\',10000)">+10K</button><button class="btn-sm btn-red" onclick="deleteVideo(\''+v.id+'\')">🗑️</button></td></tr>'});
-    h+='</table>';document.getElementById('tabContent').innerHTML=h||'<div class="empty-state">Нет видео</div>';
+    allVideos.forEach(v=>{h+=`<tr><td>${v.title}</td><td>${v.artist}</td><td>${v.views||0}</td><td><button class="btn-sm btn-blue" onclick="addViews('${v.id}',1000)">+1K</button><button class="btn-sm btn-blue" onclick="addViews('${v.id}',10000)">+10K</button><button class="btn-sm btn-red" onclick="deleteVideo('${v.id}')">🗑️</button></td></tr>`});
+    document.getElementById('tabContent').innerHTML=h+'</table>';
 }
-
-window.openEdit=function(id,name,followers,verified){
-    document.getElementById('editId').value=id;
-    document.getElementById('editName').value=name;
-    document.getElementById('editFollowers').value=followers;
-    document.getElementById('addFollowers').value=0;
-    document.getElementById('editVerified').value=verified?'true':'false';
-    document.getElementById('editModal').style.display='flex';
+function loadUploadForm(){
+    document.getElementById('tabContent').innerHTML=`
+        <h3>Загрузить видео по ссылке (админ)</h3>
+        <div style="max-width:500px">
+            <label>Название</label><input type="text" id="urlTitle" placeholder="Название видео">
+            <label>Описание</label><textarea id="urlDesc" placeholder="Описание"></textarea>
+            <label>Ссылка на видео (MP4, WebM)</label><input type="text" id="urlVideo" placeholder="https://example.com/video.mp4">
+            <div class="hint">Прямая ссылка на видеофайл</div>
+            <label>Ссылка на обложку</label><input type="text" id="urlThumb" placeholder="https://example.com/thumb.jpg">
+            <button class="btn-primary" onclick="uploadByUrl()" style="margin-top:16px;width:100%">Загрузить по ссылке</button>
+            <div id="urlUploadStatus" style="margin-top:12px;color:#10b981"></div>
+        </div>`;
+}
+window.uploadByUrl=async function(){
+    var title=document.getElementById('urlTitle').value.trim();
+    var desc=document.getElementById('urlDesc').value.trim();
+    var videoUrl=document.getElementById('urlVideo').value.trim();
+    var thumbUrl=document.getElementById('urlThumb').value.trim();
+    if(!title||!videoUrl){alert('Введите название и ссылку на видео');return}
+    await fetch(SUPABASE_URL+'/rest/v1/videos',{method:'POST',headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken,'Content-Type':'application/json'},body:JSON.stringify({title:title,artist:'BluTube Admin',artist_id:currentUser?.id||'00000000-0000-0000-0000-000000000000',video_url:videoUrl,thumbnail_url:thumbUrl||null,description:desc,views:0})});
+    document.getElementById('urlUploadStatus').textContent='✅ Видео загружено!';loadData();
 };
-window.closeModal=function(){document.getElementById('editModal').style.display='none'};
-
+window.openEdit=function(id,name,followers){document.getElementById('editId').value=id;document.getElementById('editName').value=name;document.getElementById('editFollowers').value=followers;document.getElementById('editModal').style.display='flex'}
+window.closeModal=function(){document.getElementById('editModal').style.display='none'}
 window.saveEdit=async function(){
-    var id=document.getElementById('editId').value;
-    var name=document.getElementById('editName').value;
-    var addFollowers=parseInt(document.getElementById('addFollowers').value)||0;
-    var verified=document.getElementById('editVerified').value==='true';
-    
-    var settings=JSON.parse(localStorage.getItem('blutube_users')||'{}');
-    settings[id]={name:name,verified:verified};
-    localStorage.setItem('blutube_users',JSON.stringify(settings));
-    
-    var uVids=allVideos.filter(function(x){return x.artist_id===id});
-    for(var i=0;i<uVids.length;i++){
-        await fetch(SUPABASE_URL+'/rest/v1/videos?id=eq.'+uVids[i].id,{method:'PATCH',headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken,'Content-Type':'application/json'},body:JSON.stringify({artist:name})});
-    }
-    
-    // Накрутка подписчиков
-    if(addFollowers>0){
-        for(var j=0;j<addFollowers;j++){
-            await fetch(SUPABASE_URL+'/rest/v1/follows',{
-                method:'POST',
-                headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken,'Content-Type':'application/json'},
-                body:JSON.stringify({follower_id:'00000000-0000-0000-0000-000000000000',following_id:id})
-            }).catch(function(){});
-        }
-    }
-    
-    alert('✅ Сохранено! Добавлено подписчиков: '+addFollowers);
-    closeModal();loadData().then(function(){loadUsersTab()});
+    var id=document.getElementById('editId').value,name=document.getElementById('editName').value,add=parseInt(document.getElementById('addFollowers').value)||0;
+    for(var i=0;i<add;i++){await fetch(SUPABASE_URL+'/rest/v1/follows',{method:'POST',headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken,'Content-Type':'application/json'},body:JSON.stringify({follower_id:'00000000-0000-0000-0000-000000000000',following_id:id})}).catch(()=>{})}
+    closeModal();loadData();loadUsers();
 };
-
-window.addViews=async function(id,count){
-    var vid=allVideos.find(function(x){return x.id===id});
-    await fetch(SUPABASE_URL+'/rest/v1/videos?id=eq.'+id,{method:'PATCH',headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken,'Content-Type':'application/json'},body:JSON.stringify({views:(vid?.views||0)+count})});
-    loadData().then(function(){loadVideosTab()});
-};
-window.deleteVideo=async function(id){if(!confirm('Удалить?'))return;await fetch(SUPABASE_URL+'/rest/v1/videos?id=eq.'+id,{method:'DELETE',headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken}});loadData().then(function(){loadVideosTab()})};
-window.deleteUserVideos=async function(id){if(!confirm('Удалить все видео?'))return;var uVids=allVideos.filter(function(x){return x.artist_id===id});for(var i=0;i<uVids.length;i++){await fetch(SUPABASE_URL+'/rest/v1/videos?id=eq.'+uVids[i].id,{method:'DELETE',headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken}})}loadData().then(function(){loadUsersTab()})};
+window.addViews=async function(id,count){var v=allVideos.find(x=>x.id===id);await fetch(SUPABASE_URL+'/rest/v1/videos?id=eq.'+id,{method:'PATCH',headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken,'Content-Type':'application/json'},body:JSON.stringify({views:(v?.views||0)+count})});loadData();loadVideos()}
+window.deleteVideo=async function(id){if(confirm('Удалить?')){await fetch(SUPABASE_URL+'/rest/v1/videos?id=eq.'+id,{method:'DELETE',headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken}});loadData();loadVideos()}}
+window.deleteUserVideos=async function(id){if(confirm('Удалить все видео?')){var vids=allVideos.filter(v=>v.artist_id===id);for(var v of vids){await fetch(SUPABASE_URL+'/rest/v1/videos?id=eq.'+v.id,{method:'DELETE',headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken}})}loadData();loadUsers()}}
 </script>
 </body>
 </html>
