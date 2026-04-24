@@ -229,7 +229,7 @@ function showPage(page){
     document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active')});
     document.getElementById('watchPage').style.display='none';document.getElementById('watchPage').classList.remove('active');
     var el=document.getElementById(page);if(el)el.classList.add('active');
-        } fюunction setupEvents(){
+        } function setupEvents(){
     document.getElementById('userMenuBtn').addEventListener('click',function(e){e.stopPropagation();document.getElementById('userDropdown').classList.toggle('show')});
     document.addEventListener('click',function(){document.getElementById('userDropdown').classList.remove('show')});
     document.getElementById('logoutBtn').addEventListener('click',function(e){e.preventDefault();localStorage.clear();window.location.href='login.html'});
