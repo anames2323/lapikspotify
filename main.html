@@ -173,7 +173,6 @@ document.addEventListener('click',function(e){if(!e.target.closest('.user-btn'))
 window.toggleFullscreen=function(){var c=document.getElementById('videoContainer');if(!document.fullscreenElement){if(c.requestFullscreen)c.requestFullscreen()}else{if(document.exitFullscreen)document.exitFullscreen()}}
 function getAvatar(aid){return userAvatars[aid]||'https://i.pravatar.cc/36?u='+(aid||'unknown')}
 
-// СЧЁТЧИК НЕПРОЧИТАННЫХ
 async function updateUnreadBadge(){
     try{
         var r=await fetch(SUPABASE_URL+'/rest/v1/messages?select=*&receiver_id=eq.'+currentUser.id+'&read=eq.false',{
@@ -181,10 +180,7 @@ async function updateUnreadBadge(){
         });
         var count=parseInt(r.headers.get('content-range')?.split('/')[1])||0;
         var badge=document.getElementById('chatBadge');
-        if(badge){
-            badge.textContent=count;
-            badge.style.display=count>0?'flex':'none';
-        }
+        if(badge){badge.textContent=count;badge.style.display=count>0?'flex':'none'}
     }catch(e){}
 }
 
@@ -198,22 +194,40 @@ async function init(){
     document.getElementById('commentAvatar').src=currentUser.user_metadata?.avatar_url||'https://i.pravatar.cc/40?img=7';
     userAvatars[currentUser.id]=currentUser.user_metadata?.avatar_url||'https://i.pravatar.cc/32?img=7';
     setupSidebar();await refreshVideos();
-    updateUnreadBadge();
-    setInterval(updateUnreadBadge,5000);
+    updateUnreadBadge();setInterval(updateUnreadBadge,5000);
 }
 init();
 
 function setupSidebar(){document.querySelectorAll('.sidebar-item').forEach(i=>{if(!i.onclick)i.addEventListener('click',function(){showPage(this.dataset.page)})})}
+
 function showPage(p){
     document.querySelectorAll('.sidebar-item').forEach(s=>s.classList.remove('active'));
     var a=document.querySelector('.sidebar-item[data-page="'+p+'"]');if(a)a.classList.add('active');
     document.querySelectorAll('.page').forEach(px=>px.classList.remove('active'));
     document.getElementById('watchPage').style.display='none';document.getElementById('watchPage').classList.remove('active');
     var el=document.getElementById(p+'-page');if(el)el.classList.add('active');
-    if(p==='home')renderGrid(allVideos,'videoGrid');if(p==='trending')renderGrid(allVideos,'trendingGrid');
-    if(p==='subscriptions')loadSubs();if(p==='liked')loadLiked();if(p==='history')loadHistory();
+    if(p==='home')refreshVideos();
+    if(p==='trending')renderGrid(allVideos,'trendingGrid');
+    if(p==='subscriptions')loadSubs();
+    if(p==='liked')loadLiked();
+    if(p==='history')loadHistory();
 }
-async function refreshVideos(){try{var r=await fetch(SUPABASE_URL+'/rest/v1/videos?select=*&order=created_at.desc',{headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken}});var data=await r.json();allVideos=(Array.isArray(data)?data:[]).filter(function(v){return v.category!=='shorts'})}catch(e){allVideos=[]}renderGrid(allVideos,'videoGrid');renderGrid(allVideos,'trendingGrid');loadSubs();loadLiked();loadHistory()}
+
+async function refreshVideos(){
+    console.log('🔄 Обновление видео...');
+    try{
+        var r=await fetch(SUPABASE_URL+'/rest/v1/videos?select=*&order=created_at.desc',{
+            headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken}
+        });
+        var data=await r.json();
+        allVideos=(Array.isArray(data)?data:[]).filter(function(v){return v.category!=='shorts'});
+        console.log('✅ Видео загружено:',allVideos.length);
+    }catch(e){allVideos=[];console.error(e)}
+    renderGrid(allVideos,'videoGrid');
+    renderGrid(allVideos,'trendingGrid');
+    loadSubs();loadLiked();loadHistory();
+}
+
 function renderGrid(v,c){var g=document.getElementById(c);if(!g)return;if(!v||!v.length){g.innerHTML='<div class="empty-state">Нет видео</div>';return}g.innerHTML=v.map(x=>`<div class="video-card" onclick="watchVideo('${x.id}')"><div class="thumb-wrap">${x.thumbnail_url?`<img src="${x.thumbnail_url}">`:`<video src="${x.video_url}" muted preload="metadata"></video>`}</div><div class="video-info"><img class="channel-avatar" src="${getAvatar(x.artist_id)}"><div class="video-details"><h3>${x.title||''}</h3><p>${x.artist||''} • ${x.views||0} просмотров</p></div></div></div>`).join('')}
 async function loadSubs(){try{var f=await fetch(SUPABASE_URL+'/rest/v1/follows?select=following_id&follower_id=eq.'+currentUser.id,{headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken}});var d=await f.json();var ids=Array.isArray(d)?d.map(x=>x.following_id):[];var h='';for(var uid of ids){var name=allVideos.find(v=>v.artist_id===uid)?.artist||'Пользователь';h+=`<div class="sub-card" onclick="location.href='profile.html?id=${uid}'"><img src="${getAvatar(uid)}"><div><h4>${name}</h4><p>${allVideos.filter(v=>v.artist_id===uid).length} видео</p></div></div>`}document.getElementById('subsGrid').innerHTML=h||'<div class="empty-state">Нет подписок</div>'}catch(e){}}
 async function loadLiked(){try{var l=await fetch(SUPABASE_URL+'/rest/v1/likes?select=video_id&user_id=eq.'+currentUser.id,{headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken}});var d=await l.json();var ids=Array.isArray(d)?d.map(x=>x.video_id):[];renderGrid(allVideos.filter(v=>ids.includes(v.id)),'likedGrid')}catch(e){}}
@@ -232,4 +246,4 @@ window.uploadVideo=async function(){var title=document.getElementById('uploadTit
 async function searchVideos(){var q=document.getElementById('searchInput').value.toLowerCase();renderGrid(q?allVideos.filter(v=>(v.title||'').toLowerCase().includes(q)||(v.artist||'').toLowerCase().includes(q)):allVideos,'videoGrid');showPage('home')}
 </script>
 </body>
-                           </html>
+</html>
