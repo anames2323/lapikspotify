@@ -24,7 +24,7 @@
         .chat-header img{width:40px;height:40px;border-radius:50%}
         .chat-header h3{font-size:16px}
         .messages{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:8px}
-        .message{max-width:70%;padding:10px 14px;border-radius:18px;font-size:14px;line-height:1.4;word-wrap:break-word;position:relative;animation:fadeIn 0.2s ease}
+        .message{max-width:70%;padding:10px 14px;border-radius:18px;font-size:14px;line-height:1.4;word-wrap:break-word;animation:fadeIn 0.2s ease}
         @keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
         .message.sent{background:#3b82f6;color:#fff;align-self:flex-end;border-bottom-right-radius:4px}
         .message.received{background:#272727;color:#fff;align-self:flex-start;border-bottom-left-radius:4px}
@@ -79,7 +79,18 @@ async function init(){
     accessToken=t;currentUser=JSON.parse(u);
     document.getElementById('loading').style.display='none';document.getElementById('app').style.display='flex';
     await loadProfiles();await loadMessages();renderChatList();
-    setInterval(loadMessages,3000);
+    
+    // Автооткрытие чата
+    var savedUserId=localStorage.getItem('chat_with_id');
+    var savedUserName=localStorage.getItem('chat_with_name');
+    if(savedUserId&&savedUserName){
+        var avatar='https://i.pravatar.cc/40?u='+savedUserId;
+        setTimeout(function(){openChat(savedUserId,savedUserName,avatar)},300);
+        localStorage.removeItem('chat_with_id');
+        localStorage.removeItem('chat_with_name');
+    }
+    
+    setInterval(async function(){await loadMessages();if(activeChat)renderMessages();renderChatList()},3000);
 }init();
 
 async function loadProfiles(){
@@ -97,13 +108,14 @@ function renderChatList(){
     });
     var otherIds=Object.keys(chats);
     var h='';
-    if(!otherIds.length){document.getElementById('chatList').innerHTML='<p style="padding:20px;color:#aaa;text-align:center">Нет чатов</p>';return}
+    if(!otherIds.length){document.getElementById('chatList').innerHTML='<p style="padding:20px;color:#aaa;text-align:center">Нет чатов. Напишите кому-нибудь!</p>';return}
     otherIds.forEach(function(id){
         var p=allProfiles.find(function(x){return x.id===id});
         var name=(p?p.name:'Пользователь')||'Пользователь';
         var avatar=p?.avatar_url||'https://i.pravatar.cc/44?u='+id;
-        var lastMsg=chats[id];var unread=allMessages.filter(function(m){return m.sender_id===id&&m.receiver_id===currentUser.id&&!m.read}).length;
-        h+='<div class="chat-item" onclick="openChat(\''+id+'\',\''+name+'\',\''+avatar+'\')"><img src="'+avatar+'" onerror="this.src=\'https://i.pravatar.cc/44?u='+id+'\'"><div class="chat-info"><h4>'+name+'</h4><p>'+(lastMsg.text||'').substring(0,30)+'</p></div>'+(unread?'<div class="chat-badge">'+unread+'</div>':'')+'</div>';
+        var lastMsg=chats[id];
+        var unread=allMessages.filter(function(m){return m.sender_id===id&&m.receiver_id===currentUser.id&&!m.read}).length;
+        h+='<div class="chat-item'+(activeChat===id?' active':'')+'" onclick="openChat(\''+id+'\',\''+name+'\',\''+avatar+'\')"><img src="'+avatar+'" onerror="this.src=\'https://i.pravatar.cc/44?u='+id+'\'"><div class="chat-info"><h4>'+name+'</h4><p>'+(lastMsg.text||'').substring(0,30)+'</p></div>'+(unread?'<div class="chat-badge">'+unread+'</div>':'')+'</div>';
     });
     document.getElementById('chatList').innerHTML=h;
 }
@@ -116,17 +128,18 @@ window.openChat=async function(userId,name,avatar){
     document.getElementById('chatInput').style.display='flex';
     document.getElementById('chatWindow').classList.add('open');
     document.querySelectorAll('.chat-item').forEach(function(i){i.classList.remove('active')});
-    var items=document.querySelectorAll('.chat-item');for(var i=0;i<items.length;i++){if(items[i].querySelector('h4').textContent===name)items[i].classList.add('active')}
     renderMessages();
     // Помечаем как прочитанное
     var unread=allMessages.filter(function(m){return m.sender_id===userId&&m.receiver_id===currentUser.id&&!m.read});
     for(var j=0;j<unread.length;j++){await fetch(SUPABASE_URL+'/rest/v1/messages?id=eq.'+unread[j].id,{method:'PATCH',headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken,'Content-Type':'application/json'},body:JSON.stringify({read:true})})}
     loadMessages().then(renderChatList);
+    document.getElementById('messageInput').focus();
 }
 
 function renderMessages(){
     var el=document.getElementById('messages');if(!activeChat)return;
     var msgs=allMessages.filter(function(m){return(m.sender_id===currentUser.id&&m.receiver_id===activeChat)||(m.sender_id===activeChat&&m.receiver_id===currentUser.id)});
+    if(!msgs.length){el.innerHTML='<p style="text-align:center;color:#aaa;padding:20px">Нет сообщений. Напишите первое!</p>';return}
     el.innerHTML=msgs.map(function(m){return '<div class="message '+(m.sender_id===currentUser.id?'sent':'received')+'">'+m.text+'<div class="time">'+new Date(m.created_at).toLocaleTimeString().slice(0,5)+'</div></div>'}).join('');
     el.scrollTop=el.scrollHeight;
 }
@@ -138,4 +151,4 @@ window.sendMessage=async function(){
 }
 </script>
 </body>
-  </html>
+</html>
