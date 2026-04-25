@@ -85,3 +85,58 @@
 <body>
 <div id="loading"><div class="spinner"></div><span>Загрузка BluTube...</span></div>
 <div id="app">
+    <header class="header">
+        <div class="header-left"><div class="logo" onclick="showPage('home')"><i class="fas fa-play"></i> BluTube</div></div>
+        <div class="search-bar"><input type="text" id="searchInput" placeholder="Поиск..."><button onclick="searchVideos()"><i class="fas fa-search"></i></button></div>
+        <div class="header-right">
+            <button class="icon-btn" onclick="openUpload()"><i class="fas fa-video"></i></button>
+            <div style="position:relative">
+                <div class="user-btn" onclick="toggleMenu()"><img id="headerAvatar" src="https://i.pravatar.cc/32?img=7"></div>
+                <div class="dropdown" id="userDropdown">
+                    <a href="profile.html"><i class="fas fa-user"></i> Мой канал</a>
+                    <a href="admin.html" id="adminPanelBtn" style="display:none"><i class="fas fa-shield"></i> Админ-панель</a>
+                    <a href="#" onclick="doLogout()"><i class="fas fa-sign-out-alt"></i> Выйти</a>
+                </div>
+            </div>
+        </div>
+    </header>
+    <div class="main-content">
+        <div class="sidebar">
+            <div class="sidebar-item active" data-page="home"><i class="fas fa-home"></i>Главная</div>
+            <div class="sidebar-item" data-page="shorts" onclick="window.location.href='shorts.html'"><i class="fas fa-mobile-alt"></i>Shorts</div>
+            <div class="sidebar-item" data-page="trending"><i class="fas fa-fire"></i>Тренды</div>
+            <div class="sidebar-item" data-page="subscriptions"><i class="fas fa-play"></i>Подписки</div>
+            <div class="sidebar-item" data-page="liked"><i class="fas fa-heart"></i>Лайки</div>
+            <div class="sidebar-item" data-page="history"><i class="fas fa-history"></i>История</div>
+        </div>
+        <div class="content">
+            <div id="home-page" class="page active"><div class="video-grid" id="videoGrid"></div></div>
+            <div id="trending-page" class="page"><h2>Тренды</h2><div class="video-grid" id="trendingGrid"></div></div>
+            <div id="subscriptions-page" class="page"><h2>Подписки</h2><div class="subs-grid" id="subsGrid"></div></div>
+            <div id="liked-page" class="page"><h2>Понравившиеся</h2><div class="video-grid" id="likedGrid"></div></div>
+            <div id="history-page" class="page"><h2>История</h2><button class="btn-secondary" onclick="clearHistory()" style="margin-bottom:16px">Очистить</button><div class="video-grid" id="historyGrid"></div></div>
+            <div class="watch-page" id="watchPage">
+                <div class="watch-main">
+                    <div class="video-container" id="videoContainer">
+                        <video class="watch-video" id="watchVideo" controls></video>
+                        <div style="position:absolute;bottom:10px;right:10px;display:flex;align-items:center;gap:8px;z-index:10">
+                            <img id="watchWatermark" src="https://i.pravatar.cc/32?img=7" style="width:32px;height:32px;border-radius:50%;border:2px solid rgba(255,255,255,0.5);cursor:pointer" onclick="if(currentVideo)window.location.href='profile.html?id='+(currentVideo.artist_id||'')" title="Канал автора">
+                            <button class="fullscreen-btn" onclick="toggleFullscreen()" title="Полный экран" style="position:static"><i class="fas fa-expand"></i></button>
+                        </div>
+                    </div>
+                    <div class="watch-title" id="watchTitle"></div>
+                    <div class="watch-info">
+                        <div class="channel-info"><img id="watchChannelAvatar"><div><h4 id="watchChannelName"></h4><p id="watchSubsCount" style="font-size:12px;color:#aaa"></p></div><button class="subscribe-btn sub" id="watchSubscribeBtn" onclick="toggleSub()">Подписаться</button></div>
+                        <div class="like-buttons"><button id="watchLikeBtn" onclick="toggleLike()"><i class="far fa-thumbs-up"></i> <span id="watchLikes">0</span></button><div style="width:1px;height:24px;background:#3e3e3e"></div><button><i class="far fa-thumbs-down"></i></button></div>
+                    </div>
+                    <div class="watch-desc" id="watchDesc"></div>
+                    <div class="comments-section"><h3 id="commentsCount">Комментарии</h3>
+                        <div class="comment-input"><img id="commentAvatar" src="https://i.pravatar.cc/40?img=7"><input type="text" id="commentInput" placeholder="Оставить комментарий..."><button class="icon-btn" onclick="addComment()"><i class="fas fa-paper-plane"></i></button></div>
+                        <div id="commentsList"></div>
+                    </div>
+                </div>
+                <div class="watch-sidebar" id="watchSidebar"></div>
+            </div>
+        </div>
+    </div>
+</div>
