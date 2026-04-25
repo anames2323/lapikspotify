@@ -184,3 +184,24 @@ async function loadSidebarVideos(){document.getElementById('watchSidebar').inner
         <div class="modal-buttons"><button class="btn-primary" id="confirmUpload" onclick="uploadVideo()">Загрузить</button><button class="btn-secondary" onclick="closeUpload()">Отмена</button></div>
     </div>
 </div>
+window.uploadVideo=async function(){
+    var title=document.getElementById('uploadTitle').value.trim(),vf=document.getElementById('uploadVideoFile').files[0],tf=document.getElementById('uploadThumbFile').files[0],desc=document.getElementById('uploadDesc').value.trim();
+    if(!title||!vf){alert('Введите название и выберите видео');return}
+    var btn=document.getElementById('confirmUpload');btn.disabled=true;btn.textContent='Загрузка...';document.getElementById('uploadProgress').style.display='block';
+    try{
+        var artist=currentUser.user_metadata?.name||currentUser.email?.split('@')[0]||'Пользователь',fd=new FormData();fd.append('file',vf);
+        var fn='videos/'+currentUser.id+'/'+Date.now()+'_'+vf.name.replace(/[^a-zA-Z0-9.]/g,'_');
+        await fetch(SUPABASE_URL+'/storage/v1/object/music/'+fn,{method:'POST',headers:{'Authorization':'Bearer '+accessToken,'apikey':SUPABASE_ANON_KEY},body:fd});
+        document.getElementById('uploadFill').style.width='50%';document.getElementById('uploadPercent').textContent='50%';
+        var vUrl=SUPABASE_URL+'/storage/v1/object/public/music/'+fn,tUrl=null;
+        if(tf){var tfd=new FormData();tfd.append('file',tf);var tfn='thumbs/'+currentUser.id+'/'+Date.now()+'_'+tf.name;await fetch(SUPABASE_URL+'/storage/v1/object/music/'+tfn,{method:'POST',headers:{'Authorization':'Bearer '+accessToken,'apikey':SUPABASE_ANON_KEY},body:tfd});tUrl=SUPABASE_URL+'/storage/v1/object/public/music/'+tfn}
+        document.getElementById('uploadFill').style.width='80%';document.getElementById('uploadPercent').textContent='80%';
+        await fetch(SUPABASE_URL+'/rest/v1/videos',{method:'POST',headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken,'Content-Type':'application/json'},body:JSON.stringify({title:title,artist:artist,artist_id:currentUser.id,video_url:vUrl,thumbnail_url:tUrl,description:desc,views:0,category:null})});
+        document.getElementById('uploadFill').style.width='100%';document.getElementById('uploadPercent').textContent='✅';
+        setTimeout(()=>{document.getElementById('uploadModal').style.display='none';refreshVideos();showPage('home')},500);
+    }catch(e){alert('Ошибка: '+e.message)}finally{btn.disabled=false;btn.textContent='Загрузить'}
+};
+async function searchVideos(){var q=document.getElementById('searchInput').value.toLowerCase();renderGrid(q?allVideos.filter(v=>(v.title||'').toLowerCase().includes(q)||(v.artist||'').toLowerCase().includes(q)):allVideos,'videoGrid');showPage('home')}
+</script>
+</body>
+</html>
