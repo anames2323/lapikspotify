@@ -21,19 +21,19 @@
         .chat-badge{background:#3b82f6;color:#fff;border-radius:50%;min-width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-size:11px;padding:0 4px}
         .chat-window{flex:1;display:flex;flex-direction:column;background:#0f0f0f}
         .chat-header{display:flex;align-items:center;gap:12px;padding:14px 16px;background:#0f0f0f;border-bottom:1px solid #272727}
-        .chat-header img{width:40px;height:40px;border-radius:50%}
-        .chat-header h3{font-size:16px}
+        .chat-header img{width:40px;height:40px;border-radius:50%}.chat-header h3{font-size:16px}
         .messages{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:8px}
         .message{max-width:70%;padding:10px 14px;border-radius:18px;font-size:14px;line-height:1.4;word-wrap:break-word;animation:fadeIn 0.2s ease}
         @keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
         .message.sent{background:#3b82f6;color:#fff;align-self:flex-end;border-bottom-right-radius:4px}
         .message.received{background:#272727;color:#fff;align-self:flex-start;border-bottom-left-radius:4px}
         .message .time{font-size:10px;color:rgba(255,255,255,0.6);margin-top:4px;text-align:right}
-        .chat-input{display:flex;align-items:center;gap:10px;padding:12px 16px;background:#0f0f0f;border-top:1px solid #272727}
+        .message img,.message video{max-width:200px;border-radius:12px;margin-top:8px;cursor:pointer}
+        .chat-input{display:flex;align-items:center;gap:8px;padding:12px 16px;background:#0f0f0f;border-top:1px solid #272727}
         .chat-input input{flex:1;padding:12px 16px;background:#272727;border:1px solid #3e3e3e;color:#fff;border-radius:25px;outline:none;font-size:14px}
         .chat-input input:focus{border-color:#3b82f6}
-        .chat-input button{background:#3b82f6;border:none;color:#fff;width:40px;height:40px;border-radius:50%;cursor:pointer;font-size:16px;transition:0.2s}
-        .chat-input button:hover{background:#2563eb}
+        .chat-input button{background:none;border:none;color:#3b82f6;font-size:20px;cursor:pointer;width:40px;height:40px;display:flex;align-items:center;justify-content:center}
+        .chat-input .send-btn{background:#3b82f6;border:none;color:#fff;width:40px;height:40px;border-radius:50%;cursor:pointer;font-size:16px}
         .empty-chat{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#aaa;gap:12px}
         .empty-chat i{font-size:64px;opacity:0.3}
         #loading{display:flex;align-items:center;justify-content:center;height:100vh}
@@ -45,25 +45,19 @@
 <div id="loading"><div class="spinner"></div><span>Загрузка BluChat...</span></div>
 <div id="app">
     <div class="top-bar">
-        <div style="display:flex;align-items:center;gap:12px">
-            <a href="main.html" class="back-btn"><i class="fas fa-arrow-left"></i></a>
-            <div class="logo"><i class="fas fa-play"></i> BluChat</div>
-        </div>
-        <div id="chatHeaderInfo"></div>
+        <div style="display:flex;align-items:center;gap:12px"><a href="main.html" class="back-btn"><i class="fas fa-arrow-left"></i></a><div class="logo"><i class="fas fa-play"></i> BluChat</div></div>
     </div>
     <div class="main-content">
         <div class="chat-list" id="chatList"></div>
         <div class="chat-window" id="chatWindow">
-            <div class="empty-chat" id="emptyChat">
-                <i class="fas fa-comments"></i>
-                <h3>Выберите чат</h3>
-                <p>Начните общение с пользователями</p>
-            </div>
+            <div class="empty-chat" id="emptyChat"><i class="fas fa-comments"></i><h3>Выберите чат</h3><p>Начните общение с пользователями</p></div>
             <div class="chat-header" id="activeChatHeader" style="display:none"></div>
             <div class="messages" id="messages"></div>
             <div class="chat-input" id="chatInput" style="display:none">
+                <button onclick="document.getElementById('fileInput').click()"><i class="fas fa-paperclip"></i></button>
+                <input type="file" id="fileInput" accept="image/*,video/*" onchange="sendFile()" style="display:none">
                 <input type="text" id="messageInput" placeholder="Сообщение..." onkeyup="if(event.key==='Enter')sendMessage()">
-                <button onclick="sendMessage()"><i class="fas fa-paper-plane"></i></button>
+                <button class="send-btn" onclick="sendMessage()"><i class="fas fa-paper-plane"></i></button>
             </div>
         </div>
     </div>
@@ -79,75 +73,46 @@ async function init(){
     accessToken=t;currentUser=JSON.parse(u);
     document.getElementById('loading').style.display='none';document.getElementById('app').style.display='flex';
     await loadProfiles();await loadMessages();renderChatList();
-    
-    // Автооткрытие чата
     var savedUserId=localStorage.getItem('chat_with_id');
     var savedUserName=localStorage.getItem('chat_with_name');
-    if(savedUserId&&savedUserName){
-        var avatar='https://i.pravatar.cc/40?u='+savedUserId;
-        setTimeout(function(){openChat(savedUserId,savedUserName,avatar)},300);
-        localStorage.removeItem('chat_with_id');
-        localStorage.removeItem('chat_with_name');
-    }
-    
-    setInterval(async function(){await loadMessages();if(activeChat)renderMessages();renderChatList()},3000);
+    if(savedUserId&&savedUserName){var avatar='https://i.pravatar.cc/40?u='+savedUserId;setTimeout(function(){openChat(savedUserId,savedUserName,avatar)},300);localStorage.removeItem('chat_with_id');localStorage.removeItem('chat_with_name')}
+    setInterval(async function(){await loadMessages();if(activeChat)renderMessages();renderChatList()},2000);
 }init();
 
-async function loadProfiles(){
-    try{var r=await fetch(SUPABASE_URL+'/rest/v1/profiles?select=*',{headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken}});allProfiles=(await r.json())||[]}catch(e){}
-}
-async function loadMessages(){
-    try{var r=await fetch(SUPABASE_URL+'/rest/v1/messages?select=*&or=(sender_id.eq.'+currentUser.id+',receiver_id.eq.'+currentUser.id+')&order=created_at.asc',{headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken}});allMessages=(await r.json())||[]}catch(e){}
-}
+async function loadProfiles(){try{var r=await fetch(SUPABASE_URL+'/rest/v1/profiles?select=*',{headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken}});allProfiles=(await r.json())||[]}catch(e){}}
+async function loadMessages(){try{var r=await fetch(SUPABASE_URL+'/rest/v1/messages?select=*&or=(sender_id.eq.'+currentUser.id+',receiver_id.eq.'+currentUser.id+')&order=created_at.asc',{headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken}});allMessages=(await r.json())||[]}catch(e){}}
 
 function renderChatList(){
     var chats={};
-    allMessages.forEach(function(m){
-        var other=m.sender_id===currentUser.id?m.receiver_id:m.sender_id;
-        if(!chats[other]||new Date(m.created_at)>new Date(chats[other].created_at))chats[other]=m;
-    });
-    var otherIds=Object.keys(chats);
-    var h='';
-    if(!otherIds.length){document.getElementById('chatList').innerHTML='<p style="padding:20px;color:#aaa;text-align:center">Нет чатов. Напишите кому-нибудь!</p>';return}
-    otherIds.forEach(function(id){
-        var p=allProfiles.find(function(x){return x.id===id});
-        var name=(p?p.name:'Пользователь')||'Пользователь';
-        var avatar=p?.avatar_url||'https://i.pravatar.cc/44?u='+id;
-        var lastMsg=chats[id];
-        var unread=allMessages.filter(function(m){return m.sender_id===id&&m.receiver_id===currentUser.id&&!m.read}).length;
-        h+='<div class="chat-item'+(activeChat===id?' active':'')+'" onclick="openChat(\''+id+'\',\''+name+'\',\''+avatar+'\')"><img src="'+avatar+'" onerror="this.src=\'https://i.pravatar.cc/44?u='+id+'\'"><div class="chat-info"><h4>'+name+'</h4><p>'+(lastMsg.text||'').substring(0,30)+'</p></div>'+(unread?'<div class="chat-badge">'+unread+'</div>':'')+'</div>';
-    });
+    allMessages.forEach(function(m){var other=m.sender_id===currentUser.id?m.receiver_id:m.sender_id;if(!chats[other]||new Date(m.created_at)>new Date(chats[other].created_at))chats[other]=m});
+    var otherIds=Object.keys(chats);var h='';
+    if(!otherIds.length){document.getElementById('chatList').innerHTML='<p style="padding:20px;color:#aaa;text-align:center">Нет чатов</p>';return}
+    otherIds.forEach(function(id){var p=allProfiles.find(function(x){return x.id===id});var name=(p?p.name:'Пользователь')||'Пользователь';var avatar=p?.avatar_url||'https://i.pravatar.cc/44?u='+id;var lastMsg=chats[id];var unread=allMessages.filter(function(m){return m.sender_id===id&&m.receiver_id===currentUser.id&&!m.read}).length;h+='<div class="chat-item'+(activeChat===id?' active':'')+'" onclick="openChat(\''+id+'\',\''+name+'\',\''+avatar+'\')"><img src="'+avatar+'" onerror="this.src=\'https://i.pravatar.cc/44?u='+id+'\'"><div class="chat-info"><h4>'+name+'</h4><p>'+(lastMsg.text||(lastMsg.file_url?'📎 Файл':'')).substring(0,30)+'</p></div>'+(unread?'<div class="chat-badge">'+unread+'</div>':'')+'</div>'});
     document.getElementById('chatList').innerHTML=h;
 }
 
 window.openChat=async function(userId,name,avatar){
-    activeChat=userId;
-    document.getElementById('emptyChat').style.display='none';
-    document.getElementById('activeChatHeader').style.display='flex';
-    document.getElementById('activeChatHeader').innerHTML='<img src="'+avatar+'" onerror="this.src=\'https://i.pravatar.cc/40?u='+userId+'\'"><h3>'+name+'</h3>';
-    document.getElementById('chatInput').style.display='flex';
-    document.getElementById('chatWindow').classList.add('open');
-    document.querySelectorAll('.chat-item').forEach(function(i){i.classList.remove('active')});
-    renderMessages();
-    // Помечаем как прочитанное
-    var unread=allMessages.filter(function(m){return m.sender_id===userId&&m.receiver_id===currentUser.id&&!m.read});
-    for(var j=0;j<unread.length;j++){await fetch(SUPABASE_URL+'/rest/v1/messages?id=eq.'+unread[j].id,{method:'PATCH',headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken,'Content-Type':'application/json'},body:JSON.stringify({read:true})})}
-    loadMessages().then(renderChatList);
-    document.getElementById('messageInput').focus();
+    activeChat=userId;document.getElementById('emptyChat').style.display='none';document.getElementById('activeChatHeader').style.display='flex';document.getElementById('activeChatHeader').innerHTML='<img src="'+avatar+'" onerror="this.src=\'https://i.pravatar.cc/40?u='+userId+'\'"><h3>'+name+'</h3>';document.getElementById('chatInput').style.display='flex';document.getElementById('chatWindow').classList.add('open');document.querySelectorAll('.chat-item').forEach(function(i){i.classList.remove('active')});renderMessages();
+    var unread=allMessages.filter(function(m){return m.sender_id===userId&&m.receiver_id===currentUser.id&&!m.read});for(var j=0;j<unread.length;j++){await fetch(SUPABASE_URL+'/rest/v1/messages?id=eq.'+unread[j].id,{method:'PATCH',headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken,'Content-Type':'application/json'},body:JSON.stringify({read:true})})}loadMessages().then(renderChatList);document.getElementById('messageInput').focus();
 }
 
 function renderMessages(){
-    var el=document.getElementById('messages');if(!activeChat)return;
-    var msgs=allMessages.filter(function(m){return(m.sender_id===currentUser.id&&m.receiver_id===activeChat)||(m.sender_id===activeChat&&m.receiver_id===currentUser.id)});
-    if(!msgs.length){el.innerHTML='<p style="text-align:center;color:#aaa;padding:20px">Нет сообщений. Напишите первое!</p>';return}
-    el.innerHTML=msgs.map(function(m){return '<div class="message '+(m.sender_id===currentUser.id?'sent':'received')+'">'+m.text+'<div class="time">'+new Date(m.created_at).toLocaleTimeString().slice(0,5)+'</div></div>'}).join('');
-    el.scrollTop=el.scrollHeight;
+    var el=document.getElementById('messages');if(!activeChat)return;var msgs=allMessages.filter(function(m){return(m.sender_id===currentUser.id&&m.receiver_id===activeChat)||(m.sender_id===activeChat&&m.receiver_id===currentUser.id)});if(!msgs.length){el.innerHTML='<p style="text-align:center;color:#aaa;padding:20px">Нет сообщений</p>';return}
+    el.innerHTML=msgs.map(function(m){var content=m.text||'';if(m.file_url){if(m.file_type&&m.file_type.startsWith('image')){content+='<br><img src="'+m.file_url+'" onclick="window.open(\''+m.file_url+'\')" onerror="this.style.display=\'none\'">'}else if(m.file_type&&m.file_type.startsWith('video')){content+='<br><video src="'+m.file_url+'" controls style="max-width:200px;border-radius:12px;margin-top:8px"></video>'}else{content+='<br><a href="'+m.file_url+'" target="_blank" style="color:#3b82f6">📎 Скачать файл</a>'}}return '<div class="message '+(m.sender_id===currentUser.id?'sent':'received')+'">'+content+'<div class="time">'+new Date(m.created_at).toLocaleTimeString().slice(0,5)+'</div></div>'}).join('');el.scrollTop=el.scrollHeight;
 }
 
-window.sendMessage=async function(){
-    var text=document.getElementById('messageInput').value.trim();if(!text||!activeChat)return;
-    await fetch(SUPABASE_URL+'/rest/v1/messages',{method:'POST',headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken,'Content-Type':'application/json'},body:JSON.stringify({sender_id:currentUser.id,receiver_id:activeChat,text:text})});
-    document.getElementById('messageInput').value='';await loadMessages();renderMessages();renderChatList();
+window.sendMessage=async function(){var text=document.getElementById('messageInput').value.trim();if(!text||!activeChat)return;await fetch(SUPABASE_URL+'/rest/v1/messages',{method:'POST',headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken,'Content-Type':'application/json'},body:JSON.stringify({sender_id:currentUser.id,receiver_id:activeChat,text:text})});document.getElementById('messageInput').value='';await loadMessages();renderMessages();renderChatList()}
+
+// ОТПРАВКА ФАЙЛА
+window.sendFile=async function(){
+    var file=document.getElementById('fileInput').files[0];if(!file||!activeChat)return;
+    var fd=new FormData();fd.append('file',file);
+    var fn='chat/'+currentUser.id+'/'+Date.now()+'_'+file.name.replace(/[^a-zA-Z0-9.]/g,'_');
+    var uploadRes=await fetch(SUPABASE_URL+'/storage/v1/object/music/'+fn,{method:'POST',headers:{'Authorization':'Bearer '+accessToken,'apikey':SUPABASE_ANON_KEY},body:fd});
+    if(!uploadRes.ok){alert('Ошибка загрузки');return}
+    var fileUrl=SUPABASE_URL+'/storage/v1/object/public/music/'+fn;
+    await fetch(SUPABASE_URL+'/rest/v1/messages',{method:'POST',headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken,'Content-Type':'application/json'},body:JSON.stringify({sender_id:currentUser.id,receiver_id:activeChat,text:'📎 Файл: '+file.name,file_url:fileUrl,file_type:file.type})});
+    document.getElementById('fileInput').value='';await loadMessages();renderMessages();renderChatList();
 }
 </script>
 </body>
