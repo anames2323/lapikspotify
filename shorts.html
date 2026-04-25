@@ -1,1 +1,160 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>BluShorts</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box;font-family:Roboto,Arial,sans-serif}
+        body{background:#000;color:#fff;height:100vh;overflow:hidden;touch-action:pan-y}
+        #app{display:none;height:100vh;position:relative}
+        .shorts-container{height:100vh;overflow-y:scroll;scroll-snap-type:y mandatory;scroll-behavior:smooth}
+        .short-item{height:100vh;scroll-snap-align:start;position:relative;display:flex;align-items:center;justify-content:center;background:#000}
+        .short-video{width:100%;height:100%;object-fit:contain;background:#000}
+        .short-overlay{position:absolute;bottom:0;left:0;right:0;padding:20px;background:linear-gradient(transparent,rgba(0,0,0,0.8))}
+        .short-info{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+        .short-info img{width:40px;height:40px;border-radius:50%;cursor:pointer}
+        .short-info h4{font-size:16px}.short-info p{font-size:12px;color:#aaa}
+        .short-title{font-size:14px;margin-bottom:8px}
+        .short-actions{position:absolute;right:16px;bottom:100px;display:flex;flex-direction:column;gap:20px;align-items:center}
+        .short-action{display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;transition:0.2s}
+        .short-action i{font-size:24px}.short-action span{font-size:12px}
+        .short-action:hover{transform:scale(1.1)}.short-action.liked i{color:#3b82f6}
+        .short-progress{position:absolute;bottom:0;left:0;right:0;height:3px;background:rgba(255,255,255,0.2)}
+        .short-progress-fill{height:100%;background:#3b82f6;transition:width 0.1s linear}
+        .top-bar{position:absolute;top:0;left:0;right:0;padding:16px;display:flex;justify-content:space-between;z-index:10;background:linear-gradient(rgba(0,0,0,0.7),transparent)}
+        .top-bar .logo{color:#3b82f6;font-weight:700;font-size:18px;display:flex;align-items:center;gap:6px}
+        .top-bar .logo i{background:#3b82f6;color:#fff;padding:4px 6px;border-radius:4px;font-size:12px}
+        .top-bar .tabs{display:flex;gap:4px}
+        .top-bar .tab{padding:6px 16px;border-radius:20px;font-size:14px;cursor:pointer;background:transparent;border:1px solid rgba(255,255,255,0.3);color:#fff;transition:0.2s}
+        .top-bar .tab.active{background:#fff;color:#000;border-color:#fff}
+        .back-btn{color:#fff;text-decoration:none;font-size:20px}
+        .upload-btn{position:absolute;top:80px;right:16px;z-index:10;background:#3b82f6;border:none;color:#fff;width:44px;height:44px;border-radius:50%;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(0,0,0,0.3)}
+        .modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);align-items:center;justify-content:center;z-index:1000}
+        .modal-content{background:#1a1a1a;padding:24px;border-radius:12px;width:90%;max-width:400px}
+        .modal-content h2{margin-bottom:16px}.modal-content input,.modal-content textarea{width:100%;padding:12px;margin-bottom:12px;background:#272727;border:1px solid #3e3e3e;color:#fff;border-radius:8px}
+        .modal-buttons{display:flex;gap:10px}
+        .btn-primary{flex:1;padding:12px;background:#3b82f6;border:none;border-radius:20px;color:#fff;font-weight:700;cursor:pointer}
+        .btn-secondary{flex:1;padding:12px;background:#272727;border:none;border-radius:20px;color:#fff;cursor:pointer}
+        #loading{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh}
+        .spinner{width:48px;height:48px;border:3px solid #272727;border-top-color:#3b82f6;border-radius:50%;animation:spin 1s linear infinite;margin-bottom:14px}
+        @keyframes spin{to{transform:rotate(360deg)}}
+    </style>
+</head>
+<body>
+<div id="loading"><div class="spinner"></div><span>Загрузка BluShorts...</span></div>
+<div id="app">
+    <div class="top-bar">
+        <a href="main.html" class="back-btn"><i class="fas fa-arrow-left"></i></a>
+        <div class="logo"><i class="fas fa-play"></i> BluShorts</div>
+        <div class="tabs">
+            <button class="tab active">Shorts</button>
+        </div>
+    </div>
+    <button class="upload-btn" onclick="openUpload()"><i class="fas fa-plus"></i></button>
+    <div class="shorts-container" id="shortsContainer"></div>
+</div>
+<div class="modal" id="uploadModal">
+    <div class="modal-content">
+        <h2>Загрузить Shorts</h2>
+        <label>Название</label><input type="text" id="uploadTitle" placeholder="Название">
+        <label>Видео (вертикальное)</label><input type="file" id="uploadFile" accept="video/*">
+        <div id="uploadProgress" style="margin:12px 0;display:none"><div style="height:4px;background:#3e3e3e;border-radius:2px"><div id="uploadFill" style="height:100%;background:#3b82f6;width:0%;border-radius:2px"></div></div><span id="uploadPercent">0%</span></div>
+        <div class="modal-buttons"><button class="btn-primary" onclick="uploadShort()">Загрузить</button><button class="btn-secondary" onclick="closeUpload()">Отмена</button></div>
+    </div>
+</div>
+<script>
+const SUPABASE_URL='https://axocsccfyyrtcegxvwal.supabase.co';
+const SUPABASE_ANON_KEY='sb_publishable_Jga_s88V7TAEUSvHIFkMvA_DT5vG44E';
+let currentUser=null,accessToken=null,allShorts=[],currentIndex=0;
 
+window.openUpload=function(){document.getElementById('uploadModal').style.display='flex'}
+window.closeUpload=function(){document.getElementById('uploadModal').style.display='none'}
+
+async function init(){
+    var t=localStorage.getItem('supabase_token'),u=localStorage.getItem('supabase_user');
+    if(!t||!u){window.location.href='login.html';return}
+    accessToken=t;try{currentUser=JSON.parse(u)}catch(e){localStorage.clear();window.location.href='login.html';return}
+    document.getElementById('loading').style.display='none';document.getElementById('app').style.display='block';
+    await loadShorts();
+}
+init();
+
+async function loadShorts(){
+    try{
+        var r=await fetch(SUPABASE_URL+'/rest/v1/videos?select=*&order=created_at.desc',{headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken}});
+        allShorts=(await r.json())||[];
+    }catch(e){allShorts=[]}
+    renderShorts();
+}
+
+function renderShorts(){
+    var c=document.getElementById('shortsContainer');
+    if(!allShorts.length){c.innerHTML='<div style="text-align:center;padding:50vh 20px;color:#aaa"><i class="fas fa-video" style="font-size:48px;margin-bottom:16px;opacity:0.5"></i><p>Нет Shorts. Загрузи первое видео!</p></div>';return}
+    c.innerHTML=allShorts.map((v,i)=>`
+        <div class="short-item" id="short-${i}">
+            <video class="short-video" src="${v.video_url}" loop muted preload="metadata" onloadedmetadata="setupVideo(${i})" ontimeupdate="updateProgress(${i})" onended="if(${i}<allShorts.length-1)scrollToShort(${i+1})"></video>
+            <div class="short-actions">
+                <div class="short-action" onclick="toggleLike('${v.id}')"><i class="far fa-heart"></i><span>${v.views||0}</span></div>
+                <div class="short-action" onclick="location.href='main.html?watch=${v.id}'"><i class="far fa-comment"></i><span>💬</span></div>
+                <div class="short-action"><i class="far fa-paper-plane"></i><span>📤</span></div>
+            </div>
+            <div class="short-overlay">
+                <div class="short-info">
+                    <img src="https://i.pravatar.cc/40?u=${v.artist_id||''}" onclick="location.href='profile.html?id=${v.artist_id||''}'">
+                    <div><h4>${v.artist||'Автор'}</h4><p>${v.views||0} просмотров</p></div>
+                    <button style="margin-left:auto;background:#3b82f6;border:none;color:#fff;padding:8px 16px;border-radius:20px;font-weight:600;cursor:pointer" onclick="toggleSub('${v.artist_id}')">Подписаться</button>
+                </div>
+                <div class="short-title">${v.title||''}</div>
+            </div>
+            <div class="short-progress"><div class="short-progress-fill" id="progress-${i}"></div></div>
+        </div>
+    `).join('');
+    setupScrollDetection();
+    setTimeout(()=>playCurrent(),500);
+}
+
+function setupScrollDetection(){
+    var container=document.getElementById('shortsContainer');
+    container.addEventListener('scroll',function(){
+        var index=Math.round(container.scrollTop/window.innerHeight);
+        if(index!==currentIndex){
+            pauseAll();
+            currentIndex=index;
+            playCurrent();
+        }
+    });
+}
+
+function playCurrent(){
+    var videos=document.querySelectorAll('.short-video');
+    videos.forEach((v,i)=>{if(i===currentIndex){v.play().catch(()=>{})}else{v.pause()}});
+}
+function pauseAll(){document.querySelectorAll('.short-video').forEach(v=>v.pause())}
+window.scrollToShort=function(i){document.getElementById('shortsContainer').scrollTo({top:i*window.innerHeight,behavior:'smooth'})}
+window.setupVideo=function(i){var v=document.querySelectorAll('.short-video')[i];if(v&&i===currentIndex)v.play().catch(()=>{})}
+window.updateProgress=function(i){var v=document.querySelectorAll('.short-video')[i];if(v&&v.duration){var p=(v.currentTime/v.duration)*100;var el=document.getElementById('progress-'+i);if(el)el.style.width=p+'%'}}
+
+window.toggleLike=async function(id){var l=await fetch(SUPABASE_URL+'/rest/v1/likes?select=*&user_id=eq.'+currentUser.id+'&video_id=eq.'+id,{headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken}});var d=await l.json();if(d.length){await fetch(SUPABASE_URL+'/rest/v1/likes?user_id=eq.'+currentUser.id+'&video_id=eq.'+id,{method:'DELETE',headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken}})}else{await fetch(SUPABASE_URL+'/rest/v1/likes',{method:'POST',headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken,'Content-Type':'application/json'},body:JSON.stringify({user_id:currentUser.id,video_id:id})})}}
+window.toggleSub=async function(id){var f=await fetch(SUPABASE_URL+'/rest/v1/follows?select=*&follower_id=eq.'+currentUser.id+'&following_id=eq.'+id,{headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken}});var d=await f.json();if(d.length){await fetch(SUPABASE_URL+'/rest/v1/follows?follower_id=eq.'+currentUser.id+'&following_id=eq.'+id,{method:'DELETE',headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken}})}else{await fetch(SUPABASE_URL+'/rest/v1/follows',{method:'POST',headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken,'Content-Type':'application/json'},body:JSON.stringify({follower_id:currentUser.id,following_id:id})})}alert('Готово!')}
+
+window.uploadShort=async function(){
+    var title=document.getElementById('uploadTitle').value.trim(),vf=document.getElementById('uploadFile').files[0];
+    if(!title||!vf){alert('Введите название и выберите видео');return}
+    var btn=document.querySelector('#uploadModal .btn-primary');btn.disabled=true;btn.textContent='Загрузка...';
+    document.getElementById('uploadProgress').style.display='block';
+    try{
+        var artist=currentUser.user_metadata?.name||currentUser.email?.split('@')[0]||'Пользователь',fd=new FormData();fd.append('file',vf);
+        var fn='shorts/'+currentUser.id+'/'+Date.now()+'_'+vf.name.replace(/[^a-zA-Z0-9.]/g,'_');
+        await fetch(SUPABASE_URL+'/storage/v1/object/music/'+fn,{method:'POST',headers:{'Authorization':'Bearer '+accessToken,'apikey':SUPABASE_ANON_KEY},body:fd});
+        document.getElementById('uploadFill').style.width='50%';document.getElementById('uploadPercent').textContent='50%';
+        var vUrl=SUPABASE_URL+'/storage/v1/object/public/music/'+fn;
+        await fetch(SUPABASE_URL+'/rest/v1/videos',{method:'POST',headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+accessToken,'Content-Type':'application/json'},body:JSON.stringify({title:title,artist:artist,artist_id:currentUser.id,video_url:vUrl,description:'Shorts',views:0})});
+        document.getElementById('uploadFill').style.width='100%';document.getElementById('uploadPercent').textContent='✅';
+        setTimeout(()=>{document.getElementById('uploadModal').style.display='none';loadShorts()},500);
+    }catch(e){alert('Ошибка')}finally{btn.disabled=false;btn.textContent='Загрузить'}
+};
+</script>
+</body>
+  </html>
